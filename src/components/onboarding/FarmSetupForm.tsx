@@ -1,21 +1,16 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { z } from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, MapPin } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -23,228 +18,158 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-
-const formSchema = z.object({
-  farmName: z.string().min(2, "Farm name must be at least 2 characters"),
-  farmType: z.string().min(1, "Please select a farm type"),
-  farmSize: z.string().min(1, "Please enter farm size"),
-  sizeUnit: z.string().min(1, "Please select a unit"),
-  location: z.string().min(2, "Please enter a location"),
-  description: z.string().optional(),
-});
-
-type FormValues = z.infer<typeof formSchema>;
 
 interface FarmSetupFormProps {
-  onSetupComplete?: (values: FormValues) => Promise<void>;
+  onSetupComplete: (values: any) => void;
+  isLoading?: boolean;
 }
 
-const farmTypes = [
-  "Crop Farm",
-  "Livestock Farm",
-  "Dairy Farm",
-  "Poultry Farm",
-  "Fruit Orchard",
-  "Vegetable Farm",
-  "Mixed Farm",
-  "Organic Farm",
-  "Vineyard",
-  "Other",
-];
-
 const FarmSetupForm = ({
-  onSetupComplete = async () => {},
+  onSetupComplete,
+  isLoading = false,
 }: FarmSetupFormProps) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
-
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      farmName: "",
-      farmType: "",
-      farmSize: "",
-      sizeUnit: "acres",
-      location: "",
-      description: "",
-    },
+  const [farmData, setFarmData] = useState({
+    farmName: "",
+    farmType: "mixed",
+    farmSize: "",
+    sizeUnit: "acres",
+    location: "",
+    description: "",
   });
 
-  const handleSubmit = async (values: FormValues) => {
-    setIsLoading(true);
-    try {
-      await onSetupComplete(values);
-      navigate("/");
-    } catch (error) {
-      console.error("Farm setup error:", error);
-    } finally {
-      setIsLoading(false);
-    }
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = e.target;
+    setFarmData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
+    setFarmData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSetupComplete(farmData);
   };
 
   return (
-    <Card className="w-full max-w-2xl mx-auto bg-background">
+    <Card className="w-full max-w-[90%] sm:max-w-2xl mx-auto bg-background">
       <CardHeader>
-        <CardTitle className="text-2xl font-bold text-center">
-          Set Up Your Farm
-        </CardTitle>
+        <CardTitle className="text-2xl">Farm Setup</CardTitle>
+        <CardDescription>
+          Tell us about your farm to get started
+        </CardDescription>
       </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(handleSubmit)}
-            className="space-y-6"
-          >
-            <FormField
-              control={form.control}
+      <form onSubmit={handleSubmit}>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="farmName">Farm Name</Label>
+            <Input
+              id="farmName"
               name="farmName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Farm Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Green Valley Farm" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              placeholder="Green Valley Farm"
+              value={farmData.farmName}
+              onChange={handleChange}
+              required
             />
+          </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="farmType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Farm Type</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select farm type" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {farmTypes.map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {type}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="flex space-x-2">
-                <FormField
-                  control={form.control}
-                  name="farmSize"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormLabel>Farm Size</FormLabel>
-                      <FormControl>
-                        <Input type="number" min="0" step="0.1" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="sizeUnit"
-                  render={({ field }) => (
-                    <FormItem className="w-24 pt-7">
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="acres">acres</SelectItem>
-                          <SelectItem value="hectares">hectares</SelectItem>
-                          <SelectItem value="sq.ft">sq.ft</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="farmType">Farm Type</Label>
+              <Select
+                value={farmData.farmType}
+                onValueChange={(value) => handleSelectChange("farmType", value)}
+              >
+                <SelectTrigger id="farmType">
+                  <SelectValue placeholder="Select farm type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="crop">Crop Farm</SelectItem>
+                  <SelectItem value="livestock">Livestock Farm</SelectItem>
+                  <SelectItem value="mixed">Mixed Farm</SelectItem>
+                  <SelectItem value="orchard">Orchard</SelectItem>
+                  <SelectItem value="vegetable">Vegetable Farm</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
-            <FormField
-              control={form.control}
-              name="location"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Farm Location</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Input
-                        placeholder="123 Farm Road, Countryside"
-                        {...field}
-                      />
-                      <MapPin className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    </div>
-                  </FormControl>
-                  <FormDescription>
-                    Enter your farm's address or general location
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="space-y-2">
+              <Label htmlFor="location">Location</Label>
+              <Input
+                id="location"
+                name="location"
+                placeholder="City, State/Province"
+                value={farmData.location}
+                onChange={handleChange}
+                required
+              />
+            </div>
+          </div>
 
-            <FormField
-              control={form.control}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="farmSize">Farm Size</Label>
+              <Input
+                id="farmSize"
+                name="farmSize"
+                type="number"
+                placeholder="50"
+                value={farmData.farmSize}
+                onChange={handleChange}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="sizeUnit">Unit</Label>
+              <Select
+                value={farmData.sizeUnit}
+                onValueChange={(value) => handleSelectChange("sizeUnit", value)}
+              >
+                <SelectTrigger id="sizeUnit">
+                  <SelectValue placeholder="Select unit" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="acres">Acres</SelectItem>
+                  <SelectItem value="hectares">Hectares</SelectItem>
+                  <SelectItem value="sqft">Square Feet</SelectItem>
+                  <SelectItem value="sqm">Square Meters</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="description">Farm Description (Optional)</Label>
+            <Textarea
+              id="description"
               name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Farm Description (Optional)</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Tell us a bit about your farm..."
-                      className="resize-none"
-                      rows={4}
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+              placeholder="Tell us more about your farm..."
+              value={farmData.description}
+              onChange={handleChange}
+              rows={4}
             />
-
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Setting up...
-                </>
-              ) : (
-                "Complete Setup"
-              )}
-            </Button>
-          </form>
-        </Form>
-      </CardContent>
-      <CardFooter className="flex justify-center text-sm text-muted-foreground pt-4">
-        You can update these details later in your farm settings
-      </CardFooter>
+          </div>
+        </CardContent>
+        <CardFooter>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={
+              isLoading ||
+              !farmData.farmName ||
+              !farmData.farmType ||
+              !farmData.farmSize ||
+              !farmData.location
+            }
+          >
+            {isLoading ? "Saving..." : "Complete Setup"}
+          </Button>
+        </CardFooter>
+      </form>
     </Card>
   );
 };

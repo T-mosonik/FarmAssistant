@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import {
   Package,
+  ShoppingCart,
+  Truck,
+  BarChart3,
   Plus,
   Search,
   Filter,
-  ArrowUpDown,
-  BarChart3,
+  RefreshCw,
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -13,210 +15,182 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-interface InventoryItem {
-  id: string;
-  name: string;
-  category: string;
-  quantity: number;
-  unit: string;
-  lastUpdated: Date;
-  status: "in-stock" | "low-stock" | "out-of-stock";
-  location?: string;
-}
-
-interface HarvestRecord {
-  id: string;
-  cropName: string;
-  quantity: number;
-  unit: string;
-  harvestDate: Date;
-  quality: "excellent" | "good" | "fair" | "poor";
-  notes?: string;
-}
 
 const Inventory = () => {
+  const [activeTab, setActiveTab] = useState("inputs");
+  const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<string>("all");
-  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   // Mock inventory data
-  const inventoryItems: InventoryItem[] = [
+  const inputs = [
     {
-      id: "inv-001",
-      name: "Organic Fertilizer",
+      id: "1",
+      name: "NPK Fertilizer",
       category: "Fertilizer",
-      quantity: 250,
+      quantity: 500,
       unit: "kg",
-      lastUpdated: new Date(2023, 5, 15),
-      status: "in-stock",
-      location: "Storage Shed A",
+      lastUpdated: "2023-07-10",
+      status: "In Stock",
     },
     {
-      id: "inv-002",
+      id: "2",
       name: "Tomato Seeds",
       category: "Seeds",
-      quantity: 5,
+      quantity: 100,
       unit: "packets",
-      lastUpdated: new Date(2023, 6, 2),
-      status: "low-stock",
-      location: "Seed Storage",
+      lastUpdated: "2023-07-12",
+      status: "Low Stock",
     },
     {
-      id: "inv-003",
+      id: "3",
       name: "Pesticide - Organic",
-      category: "Pesticide",
-      quantity: 0,
+      category: "Pesticides",
+      quantity: 50,
       unit: "liters",
-      lastUpdated: new Date(2023, 5, 28),
-      status: "out-of-stock",
-      location: "Chemical Storage",
+      lastUpdated: "2023-07-08",
+      status: "In Stock",
     },
     {
-      id: "inv-004",
+      id: "4",
       name: "Irrigation Pipes",
       category: "Equipment",
-      quantity: 120,
-      unit: "meters",
-      lastUpdated: new Date(2023, 4, 10),
-      status: "in-stock",
-      location: "Equipment Shed",
+      quantity: 20,
+      unit: "pieces",
+      lastUpdated: "2023-06-30",
+      status: "In Stock",
     },
     {
-      id: "inv-005",
-      name: "Corn Seeds",
-      category: "Seeds",
-      quantity: 12,
-      unit: "packets",
-      lastUpdated: new Date(2023, 6, 5),
-      status: "in-stock",
-      location: "Seed Storage",
+      id: "5",
+      name: "Chicken Feed",
+      category: "Feed",
+      quantity: 10,
+      unit: "bags",
+      lastUpdated: "2023-07-14",
+      status: "Low Stock",
     },
   ];
 
-  // Mock harvest data
-  const harvestRecords: HarvestRecord[] = [
+  const outputs = [
     {
-      id: "harv-001",
-      cropName: "Tomatoes",
-      quantity: 450,
-      unit: "kg",
-      harvestDate: new Date(2023, 6, 10),
-      quality: "excellent",
-      notes: "Early harvest, excellent quality",
-    },
-    {
-      id: "harv-002",
-      cropName: "Lettuce",
+      id: "1",
+      name: "Tomatoes",
+      category: "Vegetables",
       quantity: 200,
       unit: "kg",
-      harvestDate: new Date(2023, 6, 5),
-      quality: "good",
-      notes: "Some minor pest damage",
+      harvestDate: "2023-07-05",
+      status: "Ready for Sale",
     },
     {
-      id: "harv-003",
-      cropName: "Carrots",
-      quantity: 350,
-      unit: "kg",
-      harvestDate: new Date(2023, 5, 28),
-      quality: "fair",
-      notes: "Smaller than expected due to drought",
+      id: "2",
+      name: "Eggs",
+      category: "Poultry Products",
+      quantity: 500,
+      unit: "dozens",
+      harvestDate: "2023-07-15",
+      status: "Ready for Sale",
     },
     {
-      id: "harv-004",
-      cropName: "Corn",
-      quantity: 600,
+      id: "3",
+      name: "Corn",
+      category: "Grains",
+      quantity: 1000,
       unit: "kg",
-      harvestDate: new Date(2023, 5, 15),
-      quality: "good",
+      harvestDate: "2023-06-28",
+      status: "Stored",
+    },
+    {
+      id: "4",
+      name: "Milk",
+      category: "Dairy",
+      quantity: 100,
+      unit: "liters",
+      harvestDate: "2023-07-15",
+      status: "Ready for Sale",
     },
   ];
 
-  // Filter inventory items based on search and filters
-  const filteredInventoryItems = inventoryItems.filter((item) => {
-    const matchesSearch =
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.category.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      categoryFilter === "all" || item.category === categoryFilter;
-    const matchesStatus =
-      statusFilter === "all" || item.status === statusFilter;
+  // Filter data based on search query
+  const filteredInputs = inputs.filter((item) =>
+    item.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
-    return matchesSearch && matchesCategory && matchesStatus;
-  });
+  const filteredOutputs = outputs.filter((item) =>
+    item.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
-  // Get status badge color
-  const getStatusBadge = (status: InventoryItem["status"]) => {
+  // Calculate inventory stats
+  const calculateStats = () => {
+    const totalInputItems = inputs.reduce(
+      (sum, item) => sum + item.quantity,
+      0,
+    );
+    const totalOutputItems = outputs.reduce(
+      (sum, item) => sum + item.quantity,
+      0,
+    );
+    const lowStockItems = inputs.filter(
+      (item) => item.status === "Low Stock",
+    ).length;
+    const readyForSaleItems = outputs.filter(
+      (item) => item.status === "Ready for Sale",
+    ).length;
+
+    return {
+      totalInputItems,
+      totalOutputItems,
+      lowStockItems,
+      readyForSaleItems,
+    };
+  };
+
+  const stats = calculateStats();
+
+  // Format date
+  const formatDate = (dateString: string) => {
+    const options: Intl.DateTimeFormatOptions = {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    };
+    return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
+  // Get status badge
+  const getStatusBadge = (status: string) => {
     switch (status) {
-      case "in-stock":
+      case "In Stock":
         return (
           <Badge className="bg-green-100 text-green-800 border-green-300">
             In Stock
           </Badge>
         );
-      case "low-stock":
+      case "Low Stock":
         return (
           <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
             Low Stock
           </Badge>
         );
-      case "out-of-stock":
+      case "Out of Stock":
         return (
           <Badge className="bg-red-100 text-red-800 border-red-300">
             Out of Stock
           </Badge>
         );
-      default:
-        return <Badge>Unknown</Badge>;
-    }
-  };
-
-  // Get quality badge color
-  const getQualityBadge = (quality: HarvestRecord["quality"]) => {
-    switch (quality) {
-      case "excellent":
-        return (
-          <Badge className="bg-green-100 text-green-800 border-green-300">
-            Excellent
-          </Badge>
-        );
-      case "good":
+      case "Ready for Sale":
         return (
           <Badge className="bg-blue-100 text-blue-800 border-blue-300">
-            Good
+            Ready for Sale
           </Badge>
         );
-      case "fair":
+      case "Stored":
         return (
-          <Badge className="bg-yellow-100 text-yellow-800 border-yellow-300">
-            Fair
+          <Badge className="bg-purple-100 text-purple-800 border-purple-300">
+            Stored
           </Badge>
-        );
-      case "poor":
-        return (
-          <Badge className="bg-red-100 text-red-800 border-red-300">Poor</Badge>
         );
       default:
-        return <Badge>Unknown</Badge>;
+        return <Badge>{status}</Badge>;
     }
-  };
-
-  // Format date
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
   };
 
   return (
@@ -224,101 +198,171 @@ const Inventory = () => {
       <div className="flex flex-col h-full bg-background">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">Inventory Management</h1>
-          <Button>
-            <Plus className="mr-2 h-4 w-4" /> Add New Item
+          <Button
+            variant="outline"
+            onClick={() => {
+              setIsLoading(true);
+              // Simulate refresh
+              setTimeout(() => setIsLoading(false), 1000);
+            }}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <RefreshCw className="mr-2 h-4 w-4" />
+            )}
+            Refresh
           </Button>
         </div>
 
-        <Tabs defaultValue="inputs" className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger value="inputs">Inputs</TabsTrigger>
-            <TabsTrigger value="outputs">Harvest Records</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Farm Inputs</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{inputs.length}</div>
+              <p className="text-xs text-muted-foreground">
+                {stats.totalInputItems} items in stock
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">
+                Farm Outputs
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{outputs.length}</div>
+              <p className="text-xs text-muted-foreground">
+                {stats.totalOutputItems} items harvested
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">Low Stock</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.lowStockItems}</div>
+              <p className="text-xs text-muted-foreground">
+                Items needing restock
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium">
+                Ready for Sale
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {stats.readyForSaleItems}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Items ready for market
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Tabs
+          defaultValue="inputs"
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className="w-full"
+        >
+          <TabsList className="mb-4 md:mb-6 w-full overflow-x-auto">
+            <TabsTrigger value="inputs" className="flex items-center">
+              <ShoppingCart className="mr-2 h-4 w-4" />
+              Farm Inputs
+            </TabsTrigger>
+            <TabsTrigger value="outputs" className="flex items-center">
+              <Truck className="mr-2 h-4 w-4" />
+              Farm Outputs
+            </TabsTrigger>
+            <TabsTrigger value="analytics" className="flex items-center">
+              <BarChart3 className="mr-2 h-4 w-4" />
+              Analytics
+            </TabsTrigger>
           </TabsList>
 
-          {/* Inputs Tab */}
-          <TabsContent value="inputs" className="space-y-6">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search inventory..."
-                  className="pl-10"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
-
-              <div className="flex gap-2">
-                <Select
-                  value={categoryFilter}
-                  onValueChange={setCategoryFilter}
-                >
-                  <SelectTrigger className="w-[180px]">
-                    <Filter className="mr-2 h-4 w-4" />
-                    <SelectValue placeholder="Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
-                    <SelectItem value="Fertilizer">Fertilizer</SelectItem>
-                    <SelectItem value="Seeds">Seeds</SelectItem>
-                    <SelectItem value="Pesticide">Pesticide</SelectItem>
-                    <SelectItem value="Equipment">Equipment</SelectItem>
-                  </SelectContent>
-                </Select>
-
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-[180px]">
-                    <ArrowUpDown className="mr-2 h-4 w-4" />
-                    <SelectValue placeholder="Status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Status</SelectItem>
-                    <SelectItem value="in-stock">In Stock</SelectItem>
-                    <SelectItem value="low-stock">Low Stock</SelectItem>
-                    <SelectItem value="out-of-stock">Out of Stock</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+          {/* Search and Filter */}
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search inventory..."
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
+            <Button className="md:w-auto">
+              <Filter className="mr-2 h-4 w-4" />
+              Filter
+            </Button>
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              Add {activeTab === "inputs" ? "Input" : "Output"}
+            </Button>
+          </div>
 
-            <div className="rounded-md border">
-              <table className="w-full">
+          {/* Inputs Tab */}
+          <TabsContent value="inputs" className="space-y-4">
+            <div className="rounded-md border overflow-x-auto">
+              <table className="w-full min-w-[640px]">
                 <thead>
                   <tr className="border-b bg-muted/50">
-                    <th className="py-3 px-4 text-left font-medium">
-                      Item Name
-                    </th>
+                    <th className="py-3 px-4 text-left font-medium">Name</th>
                     <th className="py-3 px-4 text-left font-medium">
                       Category
                     </th>
                     <th className="py-3 px-4 text-left font-medium">
                       Quantity
                     </th>
-                    <th className="py-3 px-4 text-left font-medium">Status</th>
-                    <th className="py-3 px-4 text-left font-medium">
-                      Location
-                    </th>
                     <th className="py-3 px-4 text-left font-medium">
                       Last Updated
                     </th>
+                    <th className="py-3 px-4 text-left font-medium">Status</th>
+                    <th className="py-3 px-4 text-left font-medium">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredInventoryItems.length > 0 ? (
-                    filteredInventoryItems.map((item) => (
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center">
+                        <div className="flex justify-center items-center">
+                          <RefreshCw className="h-5 w-5 animate-spin mr-2" />
+                          Loading inventory data...
+                        </div>
+                      </td>
+                    </tr>
+                  ) : filteredInputs.length > 0 ? (
+                    filteredInputs.map((item) => (
                       <tr key={item.id} className="border-b hover:bg-muted/50">
-                        <td className="py-3 px-4">{item.name}</td>
+                        <td className="py-3 px-4 font-medium">{item.name}</td>
                         <td className="py-3 px-4">{item.category}</td>
                         <td className="py-3 px-4">
                           {item.quantity} {item.unit}
                         </td>
                         <td className="py-3 px-4">
+                          {formatDate(item.lastUpdated)}
+                        </td>
+                        <td className="py-3 px-4">
                           {getStatusBadge(item.status)}
                         </td>
-                        <td className="py-3 px-4">{item.location}</td>
                         <td className="py-3 px-4">
-                          {formatDate(item.lastUpdated)}
+                          <Button variant="ghost" size="sm">
+                            Edit
+                          </Button>
                         </td>
                       </tr>
                     ))
@@ -326,9 +370,9 @@ const Inventory = () => {
                     <tr>
                       <td
                         colSpan={6}
-                        className="py-6 text-center text-muted-foreground"
+                        className="py-8 text-center text-muted-foreground"
                       >
-                        No inventory items found matching your criteria
+                        No inputs found matching your search
                       </td>
                     </tr>
                   )}
@@ -337,49 +381,67 @@ const Inventory = () => {
             </div>
           </TabsContent>
 
-          {/* Harvest Records Tab */}
-          <TabsContent value="outputs" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div className="relative w-80">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input placeholder="Search harvests..." className="pl-10" />
-              </div>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" /> Record New Harvest
-              </Button>
-            </div>
-
-            <div className="rounded-md border">
-              <table className="w-full">
+          {/* Outputs Tab */}
+          <TabsContent value="outputs" className="space-y-4">
+            <div className="rounded-md border overflow-x-auto">
+              <table className="w-full min-w-[640px]">
                 <thead>
                   <tr className="border-b bg-muted/50">
-                    <th className="py-3 px-4 text-left font-medium">Crop</th>
+                    <th className="py-3 px-4 text-left font-medium">Name</th>
+                    <th className="py-3 px-4 text-left font-medium">
+                      Category
+                    </th>
                     <th className="py-3 px-4 text-left font-medium">
                       Quantity
                     </th>
                     <th className="py-3 px-4 text-left font-medium">
                       Harvest Date
                     </th>
-                    <th className="py-3 px-4 text-left font-medium">Quality</th>
-                    <th className="py-3 px-4 text-left font-medium">Notes</th>
+                    <th className="py-3 px-4 text-left font-medium">Status</th>
+                    <th className="py-3 px-4 text-left font-medium">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {harvestRecords.map((record) => (
-                    <tr key={record.id} className="border-b hover:bg-muted/50">
-                      <td className="py-3 px-4">{record.cropName}</td>
-                      <td className="py-3 px-4">
-                        {record.quantity} {record.unit}
+                  {isLoading ? (
+                    <tr>
+                      <td colSpan={6} className="py-8 text-center">
+                        <div className="flex justify-center items-center">
+                          <RefreshCw className="h-5 w-5 animate-spin mr-2" />
+                          Loading harvest data...
+                        </div>
                       </td>
-                      <td className="py-3 px-4">
-                        {formatDate(record.harvestDate)}
-                      </td>
-                      <td className="py-3 px-4">
-                        {getQualityBadge(record.quality)}
-                      </td>
-                      <td className="py-3 px-4">{record.notes || "-"}</td>
                     </tr>
-                  ))}
+                  ) : filteredOutputs.length > 0 ? (
+                    filteredOutputs.map((item) => (
+                      <tr key={item.id} className="border-b hover:bg-muted/50">
+                        <td className="py-3 px-4 font-medium">{item.name}</td>
+                        <td className="py-3 px-4">{item.category}</td>
+                        <td className="py-3 px-4">
+                          {item.quantity} {item.unit}
+                        </td>
+                        <td className="py-3 px-4">
+                          {formatDate(item.harvestDate)}
+                        </td>
+                        <td className="py-3 px-4">
+                          {getStatusBadge(item.status)}
+                        </td>
+                        <td className="py-3 px-4">
+                          <Button variant="ghost" size="sm">
+                            Edit
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td
+                        colSpan={6}
+                        className="py-8 text-center text-muted-foreground"
+                      >
+                        No outputs found matching your search
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
@@ -390,202 +452,48 @@ const Inventory = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <BarChart3 className="mr-2 h-5 w-5 text-primary" />
-                    Inventory Summary
-                  </CardTitle>
+                  <CardTitle>Input Usage Trends</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="text-sm font-medium mb-2">
-                        Items by Category
-                      </h3>
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Seeds</span>
-                          <span className="text-sm font-medium">2 items</span>
-                        </div>
-                        <div className="w-full bg-muted rounded-full h-2">
-                          <div
-                            className="bg-blue-500 h-2 rounded-full"
-                            style={{ width: "40%" }}
-                          ></div>
-                        </div>
-                      </div>
-                      <div className="space-y-2 mt-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Fertilizer</span>
-                          <span className="text-sm font-medium">1 item</span>
-                        </div>
-                        <div className="w-full bg-muted rounded-full h-2">
-                          <div
-                            className="bg-green-500 h-2 rounded-full"
-                            style={{ width: "20%" }}
-                          ></div>
-                        </div>
-                      </div>
-                      <div className="space-y-2 mt-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Equipment</span>
-                          <span className="text-sm font-medium">1 item</span>
-                        </div>
-                        <div className="w-full bg-muted rounded-full h-2">
-                          <div
-                            className="bg-yellow-500 h-2 rounded-full"
-                            style={{ width: "20%" }}
-                          ></div>
-                        </div>
-                      </div>
-                      <div className="space-y-2 mt-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Pesticide</span>
-                          <span className="text-sm font-medium">1 item</span>
-                        </div>
-                        <div className="w-full bg-muted rounded-full h-2">
-                          <div
-                            className="bg-red-500 h-2 rounded-full"
-                            style={{ width: "20%" }}
-                          ></div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    <div>
-                      <h3 className="text-sm font-medium mb-2">Stock Status</h3>
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="bg-green-50 p-3 rounded-md text-center">
-                          <div className="text-2xl font-bold text-green-600">
-                            3
-                          </div>
-                          <div className="text-xs text-green-800">In Stock</div>
-                        </div>
-                        <div className="bg-yellow-50 p-3 rounded-md text-center">
-                          <div className="text-2xl font-bold text-yellow-600">
-                            1
-                          </div>
-                          <div className="text-xs text-yellow-800">
-                            Low Stock
-                          </div>
-                        </div>
-                        <div className="bg-red-50 p-3 rounded-md text-center">
-                          <div className="text-2xl font-bold text-red-600">
-                            1
-                          </div>
-                          <div className="text-xs text-red-800">
-                            Out of Stock
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                <CardContent className="h-[300px] flex items-center justify-center">
+                  <div className="text-center text-muted-foreground">
+                    <Package className="h-16 w-16 mx-auto mb-4 text-muted" />
+                    <p>Input usage analytics will be displayed here</p>
+                    <p className="text-sm mt-2">
+                      Track your farm input consumption over time
+                    </p>
                   </div>
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <BarChart3 className="mr-2 h-5 w-5 text-primary" />
-                    Harvest Analytics
-                  </CardTitle>
+                  <CardTitle>Harvest Yields</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="text-sm font-medium mb-2">
-                        Harvest by Crop
-                      </h3>
-                      <div className="space-y-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Corn</span>
-                          <span className="text-sm font-medium">600 kg</span>
-                        </div>
-                        <div className="w-full bg-muted rounded-full h-2">
-                          <div
-                            className="bg-amber-500 h-2 rounded-full"
-                            style={{ width: "100%" }}
-                          ></div>
-                        </div>
-                      </div>
-                      <div className="space-y-2 mt-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Tomatoes</span>
-                          <span className="text-sm font-medium">450 kg</span>
-                        </div>
-                        <div className="w-full bg-muted rounded-full h-2">
-                          <div
-                            className="bg-red-500 h-2 rounded-full"
-                            style={{ width: "75%" }}
-                          ></div>
-                        </div>
-                      </div>
-                      <div className="space-y-2 mt-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Carrots</span>
-                          <span className="text-sm font-medium">350 kg</span>
-                        </div>
-                        <div className="w-full bg-muted rounded-full h-2">
-                          <div
-                            className="bg-orange-500 h-2 rounded-full"
-                            style={{ width: "58%" }}
-                          ></div>
-                        </div>
-                      </div>
-                      <div className="space-y-2 mt-2">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm">Lettuce</span>
-                          <span className="text-sm font-medium">200 kg</span>
-                        </div>
-                        <div className="w-full bg-muted rounded-full h-2">
-                          <div
-                            className="bg-green-500 h-2 rounded-full"
-                            style={{ width: "33%" }}
-                          ></div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Separator />
-
-                    <div>
-                      <h3 className="text-sm font-medium mb-2">
-                        Harvest Quality
-                      </h3>
-                      <div className="grid grid-cols-4 gap-2">
-                        <div className="bg-green-50 p-2 rounded-md text-center">
-                          <div className="text-xl font-bold text-green-600">
-                            1
-                          </div>
-                          <div className="text-xs text-green-800">
-                            Excellent
-                          </div>
-                        </div>
-                        <div className="bg-blue-50 p-2 rounded-md text-center">
-                          <div className="text-xl font-bold text-blue-600">
-                            2
-                          </div>
-                          <div className="text-xs text-blue-800">Good</div>
-                        </div>
-                        <div className="bg-yellow-50 p-2 rounded-md text-center">
-                          <div className="text-xl font-bold text-yellow-600">
-                            1
-                          </div>
-                          <div className="text-xs text-yellow-800">Fair</div>
-                        </div>
-                        <div className="bg-red-50 p-2 rounded-md text-center">
-                          <div className="text-xl font-bold text-red-600">
-                            0
-                          </div>
-                          <div className="text-xs text-red-800">Poor</div>
-                        </div>
-                      </div>
-                    </div>
+                <CardContent className="h-[300px] flex items-center justify-center">
+                  <div className="text-center text-muted-foreground">
+                    <BarChart3 className="h-16 w-16 mx-auto mb-4 text-muted" />
+                    <p>Harvest yield analytics will be displayed here</p>
+                    <p className="text-sm mt-2">
+                      Compare yields across different crops and seasons
+                    </p>
                   </div>
                 </CardContent>
               </Card>
             </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Inventory Value Over Time</CardTitle>
+              </CardHeader>
+              <CardContent className="h-[300px] flex items-center justify-center">
+                <div className="text-center text-muted-foreground">
+                  <p>
+                    This feature is coming soon. Track the value of your
+                    inventory over time.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

@@ -339,7 +339,7 @@ const Market = () => {
         </div>
 
         <Tabs defaultValue="prices" className="w-full">
-          <TabsList className="mb-6">
+          <TabsList className="mb-4 md:mb-6 w-full overflow-x-auto">
             <TabsTrigger value="prices" className="flex items-center">
               <BarChart3 className="mr-2 h-4 w-4" />
               Price Listings
@@ -353,7 +353,7 @@ const Market = () => {
           {/* Price Listings Tab */}
           <TabsContent value="prices" className="space-y-6">
             {/* Market Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium">
@@ -422,7 +422,7 @@ const Market = () => {
             </div>
 
             {/* Filters */}
-            <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex flex-col md:flex-row gap-3 md:gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -433,12 +433,12 @@ const Market = () => {
                 />
               </div>
 
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2 mt-3 md:mt-0">
                 <Select
                   value={categoryFilter}
                   onValueChange={setCategoryFilter}
                 >
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-full md:w-[180px]">
                     <Filter className="mr-2 h-4 w-4" />
                     <SelectValue placeholder="Category" />
                   </SelectTrigger>
@@ -452,7 +452,7 @@ const Market = () => {
                 </Select>
 
                 <Select value={marketFilter} onValueChange={setMarketFilter}>
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-full md:w-[180px]">
                     <Filter className="mr-2 h-4 w-4" />
                     <SelectValue placeholder="Market" />
                   </SelectTrigger>
@@ -468,8 +468,8 @@ const Market = () => {
             </div>
 
             {/* Price Table */}
-            <div className="rounded-md border">
-              <table className="w-full">
+            <div className="rounded-md border overflow-x-auto">
+              <table className="w-full min-w-[640px]">
                 <thead>
                   <tr className="border-b bg-muted/50">
                     <th className="py-3 px-4 text-left font-medium">

@@ -70,7 +70,7 @@ const QuickAddTask = ({
   if (!isOpen) return null;
 
   return (
-    <Card className="w-full max-w-[350px] bg-background shadow-md">
+    <Card className="w-full max-w-full md:max-w-[350px] bg-background shadow-md">
       <CardHeader>
         <CardTitle className="text-lg flex items-center">
           <CalendarCheck className="mr-2 h-5 w-5 text-primary" />

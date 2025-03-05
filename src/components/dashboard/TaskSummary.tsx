@@ -194,8 +194,10 @@ const TaskSummary = ({
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
-        <p className="text-sm text-muted-foreground mb-3">{task.description}</p>
+      <CardContent className="p-3 sm:p-6">
+        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+          {task.description}
+        </p>
         <div className="flex flex-wrap gap-2 mb-2">
           {getPriorityBadge(task.priority)}
           {getStatusBadge(task.status)}
@@ -210,8 +212,13 @@ const TaskSummary = ({
           </div>
         )}
       </CardContent>
-      <CardFooter className="pt-2 flex justify-between">
-        <Button variant="outline" size="sm" onClick={() => onViewTask(task.id)}>
+      <CardFooter className="pt-2 p-3 sm:p-6 flex flex-wrap sm:flex-nowrap gap-2 sm:gap-0 justify-between">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onViewTask(task.id)}
+          className="w-full sm:w-auto"
+        >
           View Details
         </Button>
         {task.status !== "completed" && (
@@ -219,9 +226,10 @@ const TaskSummary = ({
             variant="default"
             size="sm"
             onClick={() => onCompleteTask(task.id)}
-            className={
-              task.status === "overdue" ? "bg-red-500 hover:bg-red-600" : ""
-            }
+            className={cn(
+              "w-full sm:w-auto",
+              task.status === "overdue" ? "bg-red-500 hover:bg-red-600" : "",
+            )}
           >
             {task.status === "overdue" ? "Mark Complete" : "Complete"}
           </Button>
@@ -232,9 +240,9 @@ const TaskSummary = ({
 
   return (
     <div className="bg-white rounded-xl border border-border p-4 w-full h-full overflow-hidden">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2 sm:gap-0">
         <h2 className="text-xl font-semibold">Task Summary</h2>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Badge variant="destructive" className="flex items-center gap-1">
             <AlertCircle className="h-3 w-3" />
             Overdue: {overdueTasks.length}
@@ -249,7 +257,7 @@ const TaskSummary = ({
           <Button
             size="sm"
             variant="outline"
-            className="ml-2"
+            className="ml-0 sm:ml-2"
             onClick={() => {
               const newTask = {
                 title: "New Task",

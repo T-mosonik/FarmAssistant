@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Settings as SettingsIcon,
   User,
@@ -87,31 +87,83 @@ const Settings = () => {
     }
   };
 
+  // Load theme preference from localStorage on component mount
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+    if (savedTheme === "dark") {
+      setIsDarkMode(true);
+      document.documentElement.classList.add("dark");
+    } else {
+      setIsDarkMode(false);
+      document.documentElement.classList.remove("dark");
+    }
+  }, []);
+
   // Handle theme toggle
   const handleThemeToggle = () => {
-    setIsDarkMode(!isDarkMode);
-    // In a real app, this would update the theme in localStorage and apply it
+    const newThemeMode = !isDarkMode;
+    setIsDarkMode(newThemeMode);
+
+    // Update theme in localStorage and apply it
+    localStorage.setItem("theme", newThemeMode ? "dark" : "light");
     document.documentElement.classList.toggle("dark");
 
     toast({
-      title: `${!isDarkMode ? "Dark" : "Light"} mode activated`,
-      description: `Theme has been changed to ${!isDarkMode ? "dark" : "light"} mode.`,
+      title: `${newThemeMode ? "Dark" : "Light"} mode activated`,
+      description: `Theme has been changed to ${newThemeMode ? "dark" : "light"} mode.`,
     });
   };
+
+  // Load settings from localStorage on component mount
+  useEffect(() => {
+    const savedProfileSettings = localStorage.getItem("profileSettings");
+    const savedNotificationSettings = localStorage.getItem(
+      "notificationSettings",
+    );
+    const savedAppSettings = localStorage.getItem("appSettings");
+
+    if (savedProfileSettings) {
+      setProfileSettings(JSON.parse(savedProfileSettings));
+    }
+
+    if (savedNotificationSettings) {
+      setNotificationSettings(JSON.parse(savedNotificationSettings));
+    }
+
+    if (savedAppSettings) {
+      setAppSettings(JSON.parse(savedAppSettings));
+    }
+  }, []);
 
   // Handle save settings
   const handleSaveSettings = async () => {
     setIsLoading(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      // Save settings to localStorage
+      localStorage.setItem("profileSettings", JSON.stringify(profileSettings));
+      localStorage.setItem(
+        "notificationSettings",
+        JSON.stringify(notificationSettings),
+      );
+      localStorage.setItem("appSettings", JSON.stringify(appSettings));
 
-    toast({
-      title: "Settings saved",
-      description: "Your settings have been updated successfully.",
-    });
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    setIsLoading(false);
+      toast({
+        title: "Settings saved",
+        description: "Your settings have been updated successfully.",
+      });
+    } catch (error) {
+      toast({
+        title: "Error saving settings",
+        description: "There was a problem saving your settings.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -123,7 +175,7 @@ const Settings = () => {
         </div>
 
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="mb-6">
+          <TabsList className="mb-4 md:mb-6 w-full">
             <TabsTrigger value="profile" className="flex items-center">
               <User className="mr-2 h-4 w-4" />
               Profile
@@ -181,6 +233,25 @@ const Settings = () => {
                 </div>
 
                 <Separator className="my-4" />
+
+                <div className="space-y-2">
+                  <Label htmlFor="profilePicture">Profile Picture</Label>
+                  <div className="flex items-center space-x-4">
+                    <div className="h-16 w-16 rounded-full overflow-hidden border border-border">
+                      <img
+                        src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${profileSettings.name}`}
+                        alt="Profile"
+                        className="h-full w-full object-cover"
+                      />
+                    </div>
+                    <Button type="button" variant="outline" size="sm">
+                      Upload New
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Recommended size: 200x200 pixels
+                  </p>
+                </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="farmName">Farm Name</Label>

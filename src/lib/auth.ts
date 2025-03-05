@@ -69,8 +69,13 @@ export const signOut = async () => {
 
 // Get current user
 export const getCurrentUser = async (): Promise<AuthUser | null> => {
-  const { data } = await supabase.auth.getUser();
-  return data.user ? formatUser(data.user) : null;
+  try {
+    const { data } = await supabase.auth.getUser();
+    return data.user ? formatUser(data.user) : null;
+  } catch (error) {
+    console.error("Error getting current user:", error);
+    return null;
+  }
 };
 
 // Reset password

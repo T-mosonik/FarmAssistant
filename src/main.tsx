@@ -3,9 +3,13 @@ import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 import { BrowserRouter } from "react-router-dom";
+import { initializeTheme } from "./lib/theme";
 
 import { TempoDevtools } from "tempo-devtools";
 TempoDevtools.init();
+
+// Initialize theme based on user preference
+initializeTheme();
 
 const basename = import.meta.env.BASE_URL;
 

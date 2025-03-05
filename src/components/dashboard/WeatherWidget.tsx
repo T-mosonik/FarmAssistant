@@ -102,7 +102,7 @@ const WeatherWidget = ({
   }
 
   return (
-    <Card className="w-full max-w-[350px] h-[200px] overflow-hidden bg-background">
+    <Card className="w-full max-w-full md:max-w-[350px] h-[200px] overflow-hidden bg-background">
       <CardHeader className="pb-2 pt-4">
         <CardTitle className="text-lg flex justify-between items-center">
           <span>{data?.location || "Loading location..."}</span>

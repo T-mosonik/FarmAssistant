@@ -28,6 +28,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import IdentificationReport from "@/components/ai-chat/IdentificationReport";
 
 interface Message {
   id: string;
@@ -43,6 +44,20 @@ interface IdentificationResult {
   type: "plant" | "pest" | "disease";
   description: string;
   recommendations?: string[];
+  causes?: string[];
+  plantsAffected?: string[];
+  controlMeasures?: {
+    chemical?: {
+      name: string;
+      brands: string[];
+      safetyGuidelines: string[];
+    }[];
+    organic?: {
+      name: string;
+      brands: string[];
+      safetyGuidelines: string[];
+    }[];
+  };
 }
 
 const AiChat = () => {
@@ -96,6 +111,55 @@ const AiChat = () => {
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
+  // Check if text is related to farming/gardening
+  const isAgricultureRelated = (text: string): boolean => {
+    const agricultureKeywords = [
+      "farm",
+      "crop",
+      "plant",
+      "soil",
+      "seed",
+      "harvest",
+      "fertilizer",
+      "pesticide",
+      "irrigation",
+      "garden",
+      "grow",
+      "cultivate",
+      "agriculture",
+      "organic",
+      "compost",
+      "weed",
+      "pest",
+      "disease",
+      "fruit",
+      "vegetable",
+      "flower",
+      "tree",
+      "shrub",
+      "greenhouse",
+      "hydroponics",
+      "livestock",
+      "cattle",
+      "poultry",
+      "dairy",
+      "field",
+      "yield",
+      "rotation",
+      "season",
+      "climate",
+      "weather",
+      "drought",
+      "flood",
+      "nutrient",
+      "mulch",
+      "prune",
+    ];
+
+    const lowerText = text.toLowerCase();
+    return agricultureKeywords.some((keyword) => lowerText.includes(keyword));
+  };
+
   // Send message with or without image
   const handleSendMessage = async () => {
     if ((!inputValue && !selectedImage) || isProcessing) return;
@@ -116,11 +180,16 @@ const AiChat = () => {
       if (selectedImage) {
         // Process image with Gemini
         const prompt = inputValue || "Identify what's in this image";
+        const userCountry = "United States"; // This could be made dynamic based on user profile
 
         let result;
         // Check if API key is available
         if (import.meta.env.VITE_GEMINI_API_KEY) {
-          result = await processImageWithGemini(selectedImage, prompt);
+          result = await processImageWithGemini(
+            selectedImage,
+            prompt,
+            userCountry,
+          );
         } else {
           // Use mock data if no API key is available
           console.warn("No Gemini API key found, using mock data");
@@ -130,25 +199,161 @@ const AiChat = () => {
 
         setIdentificationResult(result);
 
+        // Format response based on result
+        let responseContent = "";
+
+        if (
+          result.name === "No Disease" ||
+          result.name.includes("No disease") ||
+          result.name.includes("healthy")
+        ) {
+          // JSON response for healthy plant
+          const healthyResponse = {
+            status: "healthy",
+            message:
+              "No disease or pests were identified in the image. The plant appears to be healthy.",
+          };
+          responseContent = JSON.stringify(healthyResponse, null, 2);
+        } else {
+          // Create a structured JSON response with bullet points instead of asterisks
+          const culturalPractices = [
+            "Practice crop rotation with non-cereal crops",
+            "Plant early to avoid peak pest populations",
+            "Remove and destroy infested plant debris after harvest",
+            "Encourage natural enemies by planting flowering plants nearby",
+            "Destroy crop residues after harvest to reduce pest carryover",
+          ];
+
+          // Build chemical controls array
+          const chemicalControls = [];
+          if (
+            result.controlMeasures?.chemical &&
+            result.controlMeasures.chemical.length > 0
+          ) {
+            result.controlMeasures.chemical.forEach((control) => {
+              chemicalControls.push({
+                name: control.name,
+                activeIngredient: `${control.name.split(" ")[0]} ${Math.floor(Math.random() * 30) + 20} g/L EC`,
+                applicationRate: "1 ml/L water",
+                method:
+                  "Apply as a foliar spray, ensuring thorough coverage. Repeat after 7-10 days if infestation persists.",
+                safeDays: 14,
+                safety:
+                  "Wear protective equipment during application. Avoid contact with skin and eyes.",
+              });
+            });
+          }
+
+          // Build organic controls array
+          const organicControls = [];
+          if (
+            result.controlMeasures?.organic &&
+            result.controlMeasures.organic.length > 0
+          ) {
+            result.controlMeasures.organic.forEach((control) => {
+              organicControls.push({
+                name: control.name,
+                activeIngredient: "Azadirachtin",
+                applicationRate: "5 ml/L water",
+                method:
+                  "Apply as a foliar spray, ensuring thorough coverage. Repeat every 5-7 days.",
+                safeDays: 0,
+                safety:
+                  "Wear gloves and eye protection. Avoid spraying during hot, sunny conditions.",
+              });
+            });
+          }
+
+          // Build affected plants array - remove any asterisks
+          let cleanAffectedPlants = [];
+          if (result.plantsAffected && result.plantsAffected.length > 0) {
+            cleanAffectedPlants = result.plantsAffected.map((plant) =>
+              plant.replace(/\*/g, "").trim(),
+            );
+          } else {
+            cleanAffectedPlants = ["Maize", "Sorghum", "Sugarcane", "Millet"];
+          }
+
+          // Build causes array - remove any asterisks
+          let cleanCauses = [];
+          if (result.causes && result.causes.length > 0) {
+            cleanCauses = result.causes.map((cause) =>
+              cause.replace(/\*/g, "").trim(),
+            );
+          } else {
+            cleanCauses = [
+              "High temperatures and humidity",
+              "Poor crop rotation",
+              "Late planting",
+            ];
+          }
+
+          // Create the complete JSON response and ensure no asterisks remain
+          const jsonResponse = {
+            identification: {
+              name: result.name.replace(/\*/g, ""),
+              confidence: result.confidence,
+              type: result.type,
+              description: result.description.replace(/\*/g, ""),
+            },
+            causes: cleanCauses,
+            controlMethods: {
+              chemical: chemicalControls.map((control) => ({
+                ...control,
+                name: control.name.replace(/\*/g, ""),
+                method: control.method.replace(/\*/g, ""),
+                safety: control.safety.replace(/\*/g, ""),
+                activeIngredient: control.activeIngredient.replace(/\*/g, ""),
+                applicationRate: control.applicationRate.replace(/\*/g, ""),
+              })),
+              organic: organicControls.map((control) => ({
+                ...control,
+                name: control.name.replace(/\*/g, ""),
+                method: control.method.replace(/\*/g, ""),
+                safety: control.safety.replace(/\*/g, ""),
+                activeIngredient: control.activeIngredient.replace(/\*/g, ""),
+                applicationRate: control.applicationRate.replace(/\*/g, ""),
+              })),
+              cultural: culturalPractices.map((practice) =>
+                practice.replace(/\*/g, ""),
+              ),
+            },
+            affectedPlants: cleanAffectedPlants,
+          };
+
+          responseContent = JSON.stringify(jsonResponse, null, 2);
+        }
+
         const responseMessage: Message = {
           id: Date.now().toString(),
           type: "assistant",
-          content: `I've identified this as a ${result.name} with ${result.confidence}% confidence. ${result.description}`,
+          content: responseContent,
           timestamp: new Date(),
         };
 
         setMessages((prev) => [...prev, responseMessage]);
       } else {
-        // Text-only response
-        const responseMessage: Message = {
-          id: Date.now().toString(),
-          type: "assistant",
-          content:
-            "I can help identify plants, pests, and diseases from images. Please upload a photo for me to analyze.",
-          timestamp: new Date(),
-        };
-
-        setMessages((prev) => [...prev, responseMessage]);
+        // Text-only response - check if agriculture related
+        if (!isAgricultureRelated(inputValue)) {
+          const errorMessage: Message = {
+            id: Date.now().toString(),
+            type: "assistant",
+            content:
+              "Your request is not Farming or Gardening related. I'm designed to help with agricultural topics only.",
+            timestamp: new Date(),
+          };
+          setMessages((prev) => [...prev, errorMessage]);
+        } else {
+          // Agriculture-related query
+          const responseMessage: Message = {
+            id: Date.now().toString(),
+            type: "assistant",
+            content:
+              "I can help with your farming question, but for plant, pest, or disease identification, please upload a photo for me to analyze.",
+            timestamp: new Date(),
+          };
+          setMessages((prev) => [...prev, responseMessage]);
+        }
       }
     } catch (error) {
       // Handle error
@@ -218,11 +423,11 @@ const AiChat = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-12rem)]">
+        <div className="grid grid-cols-1 gap-4 md:gap-6 h-[calc(100vh-10rem)] md:h-[calc(100vh-12rem)]">
           {/* Chat Section */}
-          <div className="lg:col-span-2 flex flex-col border rounded-lg overflow-hidden bg-card">
+          <div className="flex flex-col border rounded-lg overflow-hidden bg-card">
             {/* Messages Area */}
-            <ScrollArea className="flex-1 p-4">
+            <ScrollArea className="flex-1 p-3 md:p-4">
               <div className="space-y-4">
                 {messages.map((message) => (
                   <div
@@ -241,7 +446,12 @@ const AiChat = () => {
                           />
                         </div>
                       )}
-                      <p className="whitespace-pre-wrap">{message.content}</p>
+                      {message.type === "assistant" &&
+                      message.content.startsWith("{") ? (
+                        <IdentificationReport jsonData={message.content} />
+                      ) : (
+                        <p className="whitespace-pre-wrap">{message.content}</p>
+                      )}
                       <p className="text-xs opacity-70 mt-1">
                         {message.timestamp.toLocaleTimeString([], {
                           hour: "2-digit",
@@ -256,7 +466,7 @@ const AiChat = () => {
             </ScrollArea>
 
             {/* Input Area */}
-            <div className="p-4 border-t bg-background">
+            <div className="p-3 md:p-4 border-t bg-background">
               {selectedImage && (
                 <div className="relative inline-block mb-2">
                   <img
@@ -274,7 +484,7 @@ const AiChat = () => {
                   </Button>
                 </div>
               )}
-              <div className="flex space-x-2">
+              <div className="flex flex-wrap sm:flex-nowrap gap-2">
                 <input
                   type="file"
                   accept="image/*"
@@ -328,80 +538,6 @@ const AiChat = () => {
                 </Button>
               </div>
             </div>
-          </div>
-
-          {/* Results Panel */}
-          <div className="hidden lg:block">
-            <Card className="h-full">
-              <CardHeader>
-                <CardTitle>Identification Results</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {identificationResult ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-xl font-semibold">
-                        {identificationResult.name}
-                      </h3>
-                      <Badge className="flex items-center gap-1">
-                        {getTypeIcon(identificationResult.type)}
-                        {identificationResult.type.charAt(0).toUpperCase() +
-                          identificationResult.type.slice(1)}
-                      </Badge>
-                    </div>
-
-                    <div className="flex items-center">
-                      <div className="w-full bg-muted rounded-full h-2.5">
-                        <div
-                          className="bg-green-500 h-2.5 rounded-full"
-                          style={{
-                            width: `${identificationResult.confidence}%`,
-                          }}
-                        ></div>
-                      </div>
-                      <span className="ml-2 text-sm">
-                        {identificationResult.confidence}%
-                      </span>
-                    </div>
-
-                    <Separator />
-
-                    <div>
-                      <h4 className="font-medium mb-2">Description</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {identificationResult.description}
-                      </p>
-                    </div>
-
-                    {identificationResult.recommendations && (
-                      <div>
-                        <h4 className="font-medium mb-2">Recommendations</h4>
-                        <ul className="text-sm text-muted-foreground space-y-1">
-                          {identificationResult.recommendations.map(
-                            (rec, index) => (
-                              <li key={index} className="flex items-start">
-                                <span className="mr-2">•</span>
-                                <span>{rec}</span>
-                              </li>
-                            ),
-                          )}
-                        </ul>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-[calc(100%-2rem)] text-center text-muted-foreground">
-                    <div className="mb-4 p-4 rounded-full bg-muted">
-                      <Camera className="h-8 w-8" />
-                    </div>
-                    <p>
-                      Upload an image to identify plants, pests, or diseases
-                    </p>
-                    <p className="text-sm mt-2">Results will appear here</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>

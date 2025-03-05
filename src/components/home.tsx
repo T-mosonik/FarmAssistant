@@ -202,15 +202,15 @@ const Home = () => {
         <h1 className="text-2xl font-bold">Farm Dashboard</h1>
 
         {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {/* Left Column - Weather and Quick Add */}
-          <div className="flex flex-col space-y-6">
+          <div className="flex flex-col space-y-4 md:space-y-6">
             <WeatherSection />
             <QuickAddTask onTaskAdd={handleQuickAddTask} />
           </div>
 
-          {/* Right Column - Task Summary (spans 2 columns on large screens) */}
-          <div className="lg:col-span-2 h-[600px]">
+          {/* Right Column - Task Summary (spans 2 columns on larger screens) */}
+          <div className="md:col-span-1 lg:col-span-2 h-[500px] md:h-[600px]">
             <TaskSummary
               tasks={tasks}
               onViewTask={handleViewTask}
@@ -222,9 +222,9 @@ const Home = () => {
         </div>
 
         {/* Quick Links */}
-        <div className="mt-6 p-4 bg-white rounded-lg border border-border">
-          <h2 className="text-lg font-medium mb-3">Quick Links</h2>
-          <div className="flex flex-wrap gap-4">
+        <div className="mt-4 md:mt-6 p-3 md:p-4 bg-white rounded-lg border border-border">
+          <h2 className="text-lg font-medium mb-2 md:mb-3">Quick Links</h2>
+          <div className="flex flex-wrap gap-3 md:gap-4">
             <Link to="/ai-chat" className="text-primary hover:underline">
               AI Crop Identification
             </Link>
@@ -243,7 +243,7 @@ const Home = () => {
 
       {/* Task Edit/View Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="max-w-[95%] sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>
               {isNewTask ? "Create New Task" : "Edit Task"}
@@ -288,7 +288,7 @@ const Home = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="dueDate">Due Date</Label>
                   <Input

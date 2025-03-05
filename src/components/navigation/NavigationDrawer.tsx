@@ -81,7 +81,7 @@ const NavigationDrawer = ({
     const { user } = useAuth();
     if (user) {
       userName = user.name || userName;
-      userEmail = user.email || userEmail;
+      // Don't display email in the UI
       userAvatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.id}`;
     }
   } catch (error) {
@@ -90,8 +90,7 @@ const NavigationDrawer = ({
   return (
     <div
       className={cn(
-        "flex flex-col h-full w-[300px] bg-background border-r border-border p-4 transition-all duration-300 ease-in-out",
-        isOpen ? "translate-x-0" : "-translate-x-full",
+        "flex flex-col h-screen w-[280px] md:w-[300px] bg-background border-r border-border p-3 md:p-4 transition-all duration-300 ease-in-out",
       )}
     >
       {/* User Profile Section */}
@@ -104,7 +103,6 @@ const NavigationDrawer = ({
         </Avatar>
         <div className="flex-1 min-w-0">
           <h2 className="text-lg font-medium truncate">{userName}</h2>
-          <p className="text-sm text-muted-foreground truncate">{userEmail}</p>
         </div>
         <Button
           variant="ghost"
@@ -152,10 +150,19 @@ const NavigationDrawer = ({
           variant="outline"
           className="w-full justify-start"
           onClick={() => {
-            const { supabase } = require("@/lib/supabase");
-            supabase.auth.signOut().then(() => {
-              window.location.href = "/login";
-            });
+            try {
+              const { useAuth } = require("@/contexts/AuthContext");
+              const { logout } = useAuth();
+              logout().then(() => {
+                window.location.href = "/login";
+              });
+            } catch (error) {
+              console.log("Auth context not available, using direct method");
+              const { supabase } = require("@/lib/supabase");
+              supabase.auth.signOut().then(() => {
+                window.location.href = "/login";
+              });
+            }
           }}
         >
           <LogOut className="mr-2 h-4 w-4" />
