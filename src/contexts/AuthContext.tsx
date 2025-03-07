@@ -35,17 +35,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const checkSession = async () => {
       setIsLoading(true);
       try {
-        // For development, create a mock user if needed
-        if (process.env.NODE_ENV === "development") {
-          const mockUser: AuthUser = {
-            id: "dev-user-123",
-            email: "dev@example.com",
-            name: "Development User",
-          };
-          setUser(mockUser);
-          setIsLoading(false);
-          return;
-        }
+        // No longer creating mock users in development
 
         const { data } = await supabase.auth.getSession();
         setSession(data.session);
@@ -56,15 +46,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         }
       } catch (error) {
         console.error("Error checking session:", error);
-        // For development, create a mock user if there's an error
-        if (process.env.NODE_ENV === "development") {
-          const mockUser: AuthUser = {
-            id: "dev-user-123",
-            email: "dev@example.com",
-            name: "Development User",
-          };
-          setUser(mockUser);
-        }
+        // No longer creating mock users on error
       } finally {
         setIsLoading(false);
       }
@@ -81,10 +63,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const user = await getCurrentUser();
           setUser(user);
         } else {
-          // For development, keep the mock user
-          if (process.env.NODE_ENV !== "development") {
-            setUser(null);
-          }
+          // Always clear user when session is null
+          setUser(null);
         }
 
         setIsLoading(false);
@@ -95,15 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const timeoutId = setTimeout(() => {
       setIsLoading(false);
 
-      // If still no user after timeout and in development, create a mock user
-      if (!user && process.env.NODE_ENV === "development") {
-        const mockUser: AuthUser = {
-          id: "dev-user-123",
-          email: "dev@example.com",
-          name: "Development User",
-        };
-        setUser(mockUser);
-      }
+      // No longer creating mock users after timeout
     }, 3000);
 
     return () => {
