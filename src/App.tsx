@@ -10,6 +10,9 @@ import { Toaster } from "@/components/ui/toaster";
 const Login = lazy(() => import("./pages/Login"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const AiChat = lazy(() => import("./pages/AiChat"));
+const AiChatNew = lazy(() => import("./pages/AiChatNew"));
+const PlantIdentifier = lazy(() => import("./pages/PlantIdentifier"));
+const AiHub = lazy(() => import("./pages/AiHub"));
 const Inventory = lazy(() => import("./pages/Inventory"));
 const Settings = lazy(() => import("./pages/Settings"));
 const Market = lazy(() => import("./pages/Market"));
@@ -41,7 +44,23 @@ function App() {
               path="/ai-chat"
               element={
                 <AuthGuard>
-                  <AiChat />
+                  <AiHub />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/ai-chat-new"
+              element={
+                <AuthGuard>
+                  <AiChatNew />
+                </AuthGuard>
+              }
+            />
+            <Route
+              path="/plant-identifier"
+              element={
+                <AuthGuard>
+                  <PlantIdentifier />
                 </AuthGuard>
               }
             />

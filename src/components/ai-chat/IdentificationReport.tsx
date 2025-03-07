@@ -2,7 +2,14 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Leaf, Bug, AlertCircle, Shield, Sprout } from "lucide-react";
+import {
+  Leaf,
+  Bug,
+  AlertCircle,
+  Shield,
+  Sprout,
+  AlertTriangle,
+} from "lucide-react";
 
 interface IdentificationReportProps {
   jsonData: string;
@@ -56,11 +63,45 @@ const IdentificationReport: React.FC<IdentificationReportProps> = ({
       );
     }
 
+    // Handle error case
+    if (data.status === "error") {
+      return (
+        <Card className="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-red-700 dark:text-red-400 flex items-center gap-2">
+              <AlertCircle className="h-5 w-5" />
+              Error
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p>{data.message}</p>
+          </CardContent>
+        </Card>
+      );
+    }
+
     // Handle pest/disease identification
-    const { identification, causes, controlMethods, affectedPlants } = data;
+    const {
+      analysisSummary,
+      identification,
+      causes,
+      controlMethods,
+      affectedPlants,
+    } = data;
 
     return (
       <div className="space-y-4">
+        {/* Analysis Summary */}
+        {analysisSummary && (
+          <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
+            <CardContent className="pt-4 pb-4">
+              <p className="text-blue-800 dark:text-blue-300 font-medium">
+                {analysisSummary}
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Identification Section */}
         <Card>
           <CardHeader className="pb-2 border-b">
@@ -124,10 +165,19 @@ const IdentificationReport: React.FC<IdentificationReportProps> = ({
         {/* Control Methods Section */}
         <Card>
           <CardHeader className="pb-2 border-b">
-            <CardTitle className="flex items-center">
-              <Shield className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
-              Control Methods
-            </CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle className="flex items-center">
+                <Shield className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
+                Control Methods
+              </CardTitle>
+              <Badge
+                variant="outline"
+                className="bg-yellow-50 text-yellow-800 border-yellow-300"
+              >
+                <AlertTriangle className="h-3 w-3 mr-1" />
+                Follow local regulations
+              </Badge>
+            </div>
           </CardHeader>
           <CardContent className="pt-3 space-y-4">
             {/* Chemical Controls */}
@@ -146,44 +196,60 @@ const IdentificationReport: React.FC<IdentificationReportProps> = ({
                     </h4>
                     <div className="space-y-2">
                       <div>
-                        <p className="font-bold text-gray-700 dark:text-gray-300">
+                        <div className="font-bold text-gray-700 dark:text-gray-300">
                           Active Ingredient:
-                        </p>
-                        <p className="text-gray-600 dark:text-gray-400">
+                        </div>
+                        <div className="text-gray-600 dark:text-gray-400">
                           {control.activeIngredient}
-                        </p>
+                        </div>
                       </div>
                       <div>
-                        <p className="font-bold text-gray-700 dark:text-gray-300">
+                        <div className="font-bold text-gray-700 dark:text-gray-300">
                           Application Rate:
-                        </p>
-                        <p className="text-gray-600 dark:text-gray-400">
+                        </div>
+                        <div className="text-gray-600 dark:text-gray-400">
                           {control.applicationRate}
-                        </p>
+                        </div>
                       </div>
                       <div>
-                        <p className="font-bold text-gray-700 dark:text-gray-300">
+                        <div className="font-bold text-gray-700 dark:text-gray-300">
                           Method:
-                        </p>
-                        <p className="text-gray-600 dark:text-gray-400">
-                          {control.method}
-                        </p>
+                        </div>
+                        {control.methodPoints ? (
+                          <ul className="list-disc pl-5 space-y-1 text-gray-600 dark:text-gray-400">
+                            {control.methodPoints.map((point, idx) => (
+                              <li key={idx}>{point}</li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <div className="text-gray-600 dark:text-gray-400">
+                            {control.method}
+                          </div>
+                        )}
                       </div>
                       <div>
-                        <p className="font-bold text-gray-700 dark:text-gray-300">
+                        <div className="font-bold text-gray-700 dark:text-gray-300">
                           Safe Days:
-                        </p>
-                        <p className="text-gray-600 dark:text-gray-400">
+                        </div>
+                        <div className="text-gray-600 dark:text-gray-400">
                           {control.safeDays}
-                        </p>
+                        </div>
                       </div>
                       <div className="bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded border border-yellow-200 dark:border-yellow-800">
-                        <p className="font-bold text-yellow-700 dark:text-yellow-400">
+                        <div className="font-bold text-yellow-700 dark:text-yellow-400">
                           Safety:
-                        </p>
-                        <p className="text-yellow-600 dark:text-yellow-500">
-                          {control.safety}
-                        </p>
+                        </div>
+                        {control.safetyPoints ? (
+                          <ul className="list-disc pl-5 space-y-1 text-yellow-600 dark:text-yellow-500">
+                            {control.safetyPoints.map((point, idx) => (
+                              <li key={idx}>{point}</li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <div className="text-yellow-600 dark:text-yellow-500">
+                            {control.safety}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -207,44 +273,60 @@ const IdentificationReport: React.FC<IdentificationReportProps> = ({
                     </h4>
                     <div className="space-y-2">
                       <div>
-                        <p className="font-bold text-gray-700 dark:text-gray-300">
+                        <div className="font-bold text-gray-700 dark:text-gray-300">
                           Active Ingredient:
-                        </p>
-                        <p className="text-gray-600 dark:text-gray-400">
+                        </div>
+                        <div className="text-gray-600 dark:text-gray-400">
                           {control.activeIngredient}
-                        </p>
+                        </div>
                       </div>
                       <div>
-                        <p className="font-bold text-gray-700 dark:text-gray-300">
+                        <div className="font-bold text-gray-700 dark:text-gray-300">
                           Application Rate:
-                        </p>
-                        <p className="text-gray-600 dark:text-gray-400">
+                        </div>
+                        <div className="text-gray-600 dark:text-gray-400">
                           {control.applicationRate}
-                        </p>
+                        </div>
                       </div>
                       <div>
-                        <p className="font-bold text-gray-700 dark:text-gray-300">
+                        <div className="font-bold text-gray-700 dark:text-gray-300">
                           Method:
-                        </p>
-                        <p className="text-gray-600 dark:text-gray-400">
-                          {control.method}
-                        </p>
+                        </div>
+                        {control.methodPoints ? (
+                          <ul className="list-disc pl-5 space-y-1 text-gray-600 dark:text-gray-400">
+                            {control.methodPoints.map((point, idx) => (
+                              <li key={idx}>{point}</li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <div className="text-gray-600 dark:text-gray-400">
+                            {control.method}
+                          </div>
+                        )}
                       </div>
                       <div>
-                        <p className="font-bold text-gray-700 dark:text-gray-300">
+                        <div className="font-bold text-gray-700 dark:text-gray-300">
                           Safe Days:
-                        </p>
-                        <p className="text-gray-600 dark:text-gray-400">
+                        </div>
+                        <div className="text-gray-600 dark:text-gray-400">
                           {control.safeDays}
-                        </p>
+                        </div>
                       </div>
                       <div className="bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded border border-yellow-200 dark:border-yellow-800">
-                        <p className="font-bold text-yellow-700 dark:text-yellow-400">
+                        <div className="font-bold text-yellow-700 dark:text-yellow-400">
                           Safety:
-                        </p>
-                        <p className="text-yellow-600 dark:text-yellow-500">
-                          {control.safety}
-                        </p>
+                        </div>
+                        {control.safetyPoints ? (
+                          <ul className="list-disc pl-5 space-y-1 text-yellow-600 dark:text-yellow-500">
+                            {control.safetyPoints.map((point, idx) => (
+                              <li key={idx}>{point}</li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <div className="text-yellow-600 dark:text-yellow-500">
+                            {control.safety}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

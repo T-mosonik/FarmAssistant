@@ -43,10 +43,10 @@ const navigationItems: NavigationItem[] = [
     description: "View your farm overview",
   },
   {
-    name: "AI Chat (AIdentify)",
+    name: "AI Assistant",
     path: "/ai-chat",
     icon: <MessageSquare className="h-5 w-5" />,
-    description: "Identify plants, pests, and diseases",
+    description: "AI chat and plant identification",
   },
   {
     name: "Inventory",

@@ -44,25 +44,28 @@ const AppLayout = ({ children }: AppLayoutProps = {}) => {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background">
-      {/* Navigation Drawer - with overlay on mobile */}
-      {isMobile && drawerOpen && (
+      {/* Navigation Drawer - always in fixed position for all screen sizes */}
+      <div
+        className={cn(
+          "z-50 transition-transform duration-300 ease-in-out h-full fixed",
+          !drawerOpen
+            ? "-translate-x-full"
+            : "translate-x-0 w-[280px] md:w-[300px]",
+        )}
+      >
+        <NavigationDrawer isOpen={true} onClose={() => setDrawerOpen(false)} />
+      </div>
+
+      {/* Overlay for when drawer is open */}
+      {drawerOpen && (
         <div
           className="fixed inset-0 bg-black/30 z-40"
           onClick={() => setDrawerOpen(false)}
         />
       )}
 
-      <div
-        className={cn(
-          "fixed md:relative z-50 transition-transform duration-300 ease-in-out",
-          isMobile && !drawerOpen ? "-translate-x-full" : "translate-x-0",
-        )}
-      >
-        <NavigationDrawer isOpen={true} onClose={() => setDrawerOpen(false)} />
-      </div>
-
-      {/* Main Content Area */}
-      <div className="flex flex-col flex-1 overflow-hidden">
+      {/* Main Content Area - always full width */}
+      <div className="flex flex-col flex-1 w-full overflow-hidden">
         {/* Top Header Bar */}
         <header className="h-14 md:h-16 border-b border-border flex items-center px-3 md:px-4 bg-background">
           <Button
@@ -78,7 +81,7 @@ const AppLayout = ({ children }: AppLayoutProps = {}) => {
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-auto p-3 md:p-6">
+        <main className="flex-1 overflow-auto p-3 md:p-6 w-full">
           {children || <Outlet />}
         </main>
       </div>

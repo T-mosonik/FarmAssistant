@@ -239,7 +239,7 @@ const TaskSummary = ({
   );
 
   return (
-    <div className="bg-white rounded-xl border border-border p-4 w-full h-full overflow-hidden">
+    <div className="bg-background dark:bg-gray-800 rounded-xl border border-border p-4 w-full h-full overflow-hidden">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2 sm:gap-0">
         <h2 className="text-xl font-semibold">Task Summary</h2>
         <div className="flex flex-wrap gap-2">
