@@ -35,7 +35,17 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const checkSession = async () => {
       setIsLoading(true);
       try {
-        // No longer creating mock users in development
+        // For development, create a mock user if needed
+        if (process.env.NODE_ENV === "development") {
+          const mockUser: AuthUser = {
+            id: "dev-user-123",
+            email: "dev@example.com",
+            name: "Development User",
+          };
+          setUser(mockUser);
+          setIsLoading(false);
+          return;
+        }
 
         const { data } = await supabase.auth.getSession();
         setSession(data.session);

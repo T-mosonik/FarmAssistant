@@ -77,22 +77,11 @@ const PlantIdentifier = () => {
       // Process image with Gemini
       const prompt =
         "Identify any plants, pests, or diseases in this image. If there are no plants or agricultural elements visible, please state that clearly.";
-      const userCountry = "United States"; // This could be made dynamic based on user profile
+      const userCountry = "Kenya"; // Use Kenya for relevant brand recommendations
 
       let result: GeminiIdentificationResult;
-      // Check if API key is available
-      if (import.meta.env.VITE_GEMINI_API_KEY) {
-        result = await processImageWithGemini(
-          selectedImage,
-          prompt,
-          "Kenya", // Use the user's actual country for relevant brand recommendations
-        );
-      } else {
-        // Use mock data if no API key is available
-        console.warn("No Gemini API key found, using mock data");
-        await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate API delay
-        result = getMockIdentificationResult();
-      }
+      // Always use the real API
+      result = await processImageWithGemini(selectedImage, prompt, userCountry);
 
       // Format response based on result
       let responseContent = "";

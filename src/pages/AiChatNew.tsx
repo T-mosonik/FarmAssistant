@@ -143,17 +143,10 @@ const AiChatNew = () => {
     setIsProcessing(true);
 
     try {
-      // Let Gemini handle all requests without pre-filtering
-      // Make a real API call to Gemini
+      // Always use the real API call to Gemini
       try {
         const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
         const userCountry = getUserCountry();
-
-        if (!apiKey) {
-          throw new Error(
-            "Gemini API key not found. Please set VITE_GEMINI_API_KEY in your .env file.",
-          );
-        }
 
         const response = await fetch(
           `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,

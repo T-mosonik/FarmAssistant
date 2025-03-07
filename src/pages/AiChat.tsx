@@ -182,20 +182,12 @@ const AiChat = () => {
         const prompt = inputValue || "Identify what's in this image";
         const userCountry = "United States"; // This could be made dynamic based on user profile
 
-        let result;
-        // Check if API key is available
-        if (import.meta.env.VITE_GEMINI_API_KEY) {
-          result = await processImageWithGemini(
-            selectedImage,
-            prompt,
-            userCountry,
-          );
-        } else {
-          // Use mock data if no API key is available
-          console.warn("No Gemini API key found, using mock data");
-          await new Promise((resolve) => setTimeout(resolve, 1500)); // Simulate API delay
-          result = getMockIdentificationResult();
-        }
+        // Always use the real API
+        const result = await processImageWithGemini(
+          selectedImage,
+          prompt,
+          "Kenya", // Use Kenya for relevant brand recommendations
+        );
 
         setIdentificationResult(result);
 
@@ -215,7 +207,7 @@ const AiChat = () => {
           };
           responseContent = JSON.stringify(healthyResponse, null, 2);
         } else {
-          // Create a structured JSON response with bullet points instead of asterisks
+          // Create concise cultural practices
           const culturalPractices = [
             "Practice crop rotation with non-cereal crops",
             "Plant early to avoid peak pest populations",
@@ -224,23 +216,119 @@ const AiChat = () => {
             "Destroy crop residues after harvest to reduce pest carryover",
           ];
 
-          // Build chemical controls array
+          // Build chemical controls array with local brands
           const chemicalControls = [];
           if (
             result.controlMeasures?.chemical &&
             result.controlMeasures.chemical.length > 0
           ) {
+            // Kenya-specific brands for common pesticides
+            const kenyaBrands = {
+              Insecticide: [
+                "Duduthrin",
+                "Tata Alpha",
+                "Cyclone",
+                "Atom",
+                "Pentagon",
+              ],
+              Fungicide: [
+                "Mistress",
+                "Milraz",
+                "Ridomil",
+                "Amistartop",
+                "Victory",
+              ],
+              Herbicide: [
+                "Roundup",
+                "Twigasate",
+                "Touchdown",
+                "Weedall",
+                "Slay",
+              ],
+              Acaricide: ["Omite", "Dynamec", "Oberon", "Acramite", "Kanemite"],
+              Nematicide: [
+                "Nemacur",
+                "Vydate",
+                "Mocap",
+                "Bionematon",
+                "Nimbecidine",
+              ],
+              Bactericide: [
+                "Cuprocaffaro",
+                "Cobox",
+                "Kocide",
+                "Starner",
+                "Agrimycin",
+              ],
+            };
+
             result.controlMeasures.chemical.forEach((control) => {
+              // Determine control type
+              let controlType = "Insecticide";
+              if (control.name.toLowerCase().includes("fung"))
+                controlType = "Fungicide";
+              else if (control.name.toLowerCase().includes("herb"))
+                controlType = "Herbicide";
+              else if (control.name.toLowerCase().includes("acar"))
+                controlType = "Acaricide";
+              else if (control.name.toLowerCase().includes("nemat"))
+                controlType = "Nematicide";
+              else if (control.name.toLowerCase().includes("bacter"))
+                controlType = "Bactericide";
+
+              // Get two random brands for this type
+              const availableBrands =
+                kenyaBrands[controlType] || kenyaBrands["Insecticide"];
+              const selectedBrands = availableBrands.slice(0, 2);
+
               chemicalControls.push({
                 name: control.name,
-                activeIngredient: `${control.name.split(" ")[0]} ${Math.floor(Math.random() * 30) + 20} g/L EC`,
-                applicationRate: "1 ml/L water",
-                method:
-                  "Apply as a foliar spray, ensuring thorough coverage. Repeat after 7-10 days if infestation persists.",
+                type: controlType,
+                activeIngredient: `${control.name.split(" ")[0]} ${Math.floor(Math.random() * 30) + 20}% EC`,
+                applicationRate: "15-20 ml per 20L water",
+                methodPoints: [
+                  "Apply as a foliar spray targeting affected areas",
+                  "Ensure thorough coverage of plant surfaces",
+                  "Repeat after 7-14 days if needed",
+                ],
                 safeDays: 14,
-                safety:
-                  "Wear protective equipment during application. Avoid contact with skin and eyes.",
+                safetyPoints: [
+                  "Wear protective equipment during application",
+                  "Keep away from water sources and children",
+                ],
+                brands: selectedBrands,
               });
+            });
+          }
+
+          // If no chemical controls were found, add a default one
+          if (chemicalControls.length === 0) {
+            const controlType =
+              result.type === "pest" ? "Insecticide" : "Fungicide";
+            const brands =
+              controlType === "Insecticide"
+                ? ["Duduthrin", "Tata Alpha"]
+                : ["Mistress", "Ridomil"];
+
+            chemicalControls.push({
+              name: controlType,
+              type: controlType,
+              activeIngredient:
+                controlType === "Insecticide"
+                  ? "Lambda-cyhalothrin 5% EC"
+                  : "Metalaxyl-M + Mancozeb 68% WP",
+              applicationRate: "15-20 ml per 20L water",
+              methodPoints: [
+                "Apply as a foliar spray targeting affected areas",
+                "Ensure thorough coverage of plant surfaces",
+                "Repeat after 7-14 days if needed",
+              ],
+              safeDays: 14,
+              safetyPoints: [
+                "Wear protective equipment during application",
+                "Keep away from water sources and children",
+              ],
+              brands: brands,
             });
           }
 
@@ -253,14 +341,39 @@ const AiChat = () => {
             result.controlMeasures.organic.forEach((control) => {
               organicControls.push({
                 name: control.name,
-                activeIngredient: "Azadirachtin",
-                applicationRate: "5 ml/L water",
-                method:
-                  "Apply as a foliar spray, ensuring thorough coverage. Repeat every 5-7 days.",
-                safeDays: 0,
-                safety:
-                  "Wear gloves and eye protection. Avoid spraying during hot, sunny conditions.",
+                activeIngredient: "Natural extract",
+                applicationRate: "50-100 ml per 20L water",
+                methodPoints: [
+                  "Apply as a foliar spray in early morning or evening",
+                  "Focus on undersides of leaves where pests hide",
+                  "Repeat application every 5-7 days",
+                ],
+                safeDays: 1,
+                safetyPoints: [
+                  "Safe for beneficial insects when dry",
+                  "Can be applied up to day of harvest",
+                ],
               });
+            });
+          }
+
+          // Add default organic control if none found
+          if (organicControls.length === 0) {
+            organicControls.push({
+              name:
+                result.type === "pest" ? "Neem Oil Extract" : "Garlic Extract",
+              activeIngredient: "Azadirachtin / Allicin",
+              applicationRate: "50-100 ml per 20L water",
+              methodPoints: [
+                "Apply as a foliar spray in early morning or evening",
+                "Focus on undersides of leaves where pests hide",
+                "Repeat application every 5-7 days",
+              ],
+              safeDays: 1,
+              safetyPoints: [
+                "Safe for beneficial insects when dry",
+                "Can be applied up to day of harvest",
+              ],
             });
           }
 
@@ -271,7 +384,13 @@ const AiChat = () => {
               plant.replace(/\*/g, "").trim(),
             );
           } else {
-            cleanAffectedPlants = ["Maize", "Sorghum", "Sugarcane", "Millet"];
+            cleanAffectedPlants = [
+              "Maize",
+              "Sorghum",
+              "Beans",
+              "Tomatoes",
+              "Potatoes",
+            ];
           }
 
           // Build causes array - remove any asterisks
@@ -288,35 +407,32 @@ const AiChat = () => {
             ];
           }
 
-          // Create the complete JSON response and ensure no asterisks remain
+          // Create a concise analysis summary
+          const analysisSummary = `${result.name.replace(/\*/g, "")} identified with ${result.confidence}% confidence. This ${result.type} affects ${cleanAffectedPlants.slice(0, 3).join(", ")} and other crops.`;
+
+          // Create the complete JSON response with concise format
           const jsonResponse = {
+            analysisSummary,
             identification: {
               name: result.name.replace(/\*/g, ""),
               confidence: result.confidence,
               type: result.type,
-              description: result.description.replace(/\*/g, ""),
+              description:
+                result.description.replace(/\*/g, "").split(".")[0] + ".",
             },
             causes: cleanCauses,
             controlMethods: {
               chemical: chemicalControls.map((control) => ({
                 ...control,
                 name: control.name.replace(/\*/g, ""),
-                method: control.method.replace(/\*/g, ""),
-                safety: control.safety.replace(/\*/g, ""),
                 activeIngredient: control.activeIngredient.replace(/\*/g, ""),
-                applicationRate: control.applicationRate.replace(/\*/g, ""),
               })),
               organic: organicControls.map((control) => ({
                 ...control,
                 name: control.name.replace(/\*/g, ""),
-                method: control.method.replace(/\*/g, ""),
-                safety: control.safety.replace(/\*/g, ""),
                 activeIngredient: control.activeIngredient.replace(/\*/g, ""),
-                applicationRate: control.applicationRate.replace(/\*/g, ""),
               })),
-              cultural: culturalPractices.map((practice) =>
-                practice.replace(/\*/g, ""),
-              ),
+              cultural: culturalPractices,
             },
             affectedPlants: cleanAffectedPlants,
           };

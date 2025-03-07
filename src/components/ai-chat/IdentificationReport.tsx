@@ -211,6 +211,16 @@ const IdentificationReport: React.FC<IdentificationReportProps> = ({
                           {control.applicationRate}
                         </div>
                       </div>
+                      {control.brands && (
+                        <div>
+                          <div className="font-bold text-gray-700 dark:text-gray-300">
+                            Available Brands:
+                          </div>
+                          <div className="text-gray-600 dark:text-gray-400">
+                            {control.brands.join(", ")}
+                          </div>
+                        </div>
+                      )}
                       <div>
                         <div className="font-bold text-gray-700 dark:text-gray-300">
                           Method:
