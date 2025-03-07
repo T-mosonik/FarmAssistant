@@ -1,30 +1,82 @@
-# React + TypeScript + Vite
+# FarmAssistant
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern web application built to help farmers manage their agricultural operations efficiently. Built with React, TypeScript, and Vite, featuring a beautiful UI powered by Tailwind CSS and Radix UI components.
 
-Currently, two official plugins are available:
+## 🌟 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Modern, responsive user interface
+- Built with TypeScript for type safety
+- Real-time updates and interactions
+- Secure authentication with Supabase
+- Beautiful and accessible UI components
+- Mobile-friendly design
 
-## Expanding the ESLint configuration
+## 🚀 Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+- **Frontend Framework:** React 18
+- **Build Tool:** Vite
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **UI Components:** Radix UI
+- **Backend/Auth:** Supabase
+- **Form Handling:** React Hook Form
+- **Validation:** Zod
+- **Routing:** React Router
+- **Animation:** Framer Motion
+- **Date Handling:** date-fns
 
-- Configure the top-level `parserOptions` property like this:
+## 📦 Installation
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
+1. Clone the repository:
+```bash
+git clone [your-repository-url]
+cd FarmAssistant
 ```
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Set up environment variables:
+   - Copy `.env.example` to `.env`
+   - Fill in your Supabase credentials and other required variables
+
+4. Start the development server:
+```bash
+npm run dev
+```
+
+## 🛠️ Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+- `npm run types:supabase` - Generate Supabase types
+
+## 🔧 Configuration
+
+The project includes several configuration files:
+- `vite.config.ts` - Vite configuration
+- `tsconfig.json` - TypeScript configuration
+- `tailwind.config.js` - Tailwind CSS configuration
+- `postcss.config.js` - PostCSS configuration
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## 📝 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 🔗 Links
+
+- [Documentation](#)
+- [Live Demo](#)
+- [Issue Tracker](#)
+
+## 📧 Contact
+
+For questions or support, please [open an issue](#) or contact the maintainers.
