@@ -224,13 +224,7 @@ const AiChat = () => {
           ) {
             // Kenya-specific brands for common pesticides
             const kenyaBrands = {
-              Insecticide: [
-                "Duduthrin",
-                "Tata Alpha",
-                "Cyclone",
-                "Atom",
-                "Pentagon",
-              ],
+              Insecticide: ["Duduthrin", "Tata Alpha", "Cyclone", "Atom"],
               Fungicide: [
                 "Mistress",
                 "Milraz",
@@ -238,43 +232,20 @@ const AiChat = () => {
                 "Amistartop",
                 "Victory",
               ],
-              Herbicide: [
-                "Roundup",
-                "Twigasate",
-                "Touchdown",
-                "Weedall",
-                "Slay",
-              ],
-              Acaricide: ["Omite", "Dynamec", "Oberon", "Acramite", "Kanemite"],
-              Nematicide: [
-                "Nemacur",
-                "Vydate",
-                "Mocap",
-                "Bionematon",
-                "Nimbecidine",
-              ],
-              Bactericide: [
-                "Cuprocaffaro",
-                "Cobox",
-                "Kocide",
-                "Starner",
-                "Agrimycin",
-              ],
+              Herbicide: ["Roundup", "Twigasate", "Touchdown", "Weedall"],
+              Acaricide: ["Omite", "Dynamec", "Oberon", "Acramite"],
+              Bactericide: ["Cuprocaffaro", "Cobox", "Kocide", "Starner"],
             };
 
-            result.controlMeasures.chemical.forEach((control) => {
+            // Limit to 2 chemical controls
+            const limitedChemicals = result.controlMeasures.chemical.slice(
+              0,
+              2,
+            );
+            limitedChemicals.forEach((control) => {
               // Determine control type
               let controlType = "Insecticide";
-              if (control.name.toLowerCase().includes("fung"))
-                controlType = "Fungicide";
-              else if (control.name.toLowerCase().includes("herb"))
-                controlType = "Herbicide";
-              else if (control.name.toLowerCase().includes("acar"))
-                controlType = "Acaricide";
-              else if (control.name.toLowerCase().includes("nemat"))
-                controlType = "Nematicide";
-              else if (control.name.toLowerCase().includes("bacter"))
-                controlType = "Bactericide";
+              if (result.type === "disease") controlType = "Fungicide";
 
               // Get two random brands for this type
               const availableBrands =
@@ -283,20 +254,11 @@ const AiChat = () => {
 
               chemicalControls.push({
                 name: control.name,
-                type: controlType,
-                activeIngredient: `${control.name.split(" ")[0]} ${Math.floor(Math.random() * 30) + 20}% EC`,
-                applicationRate: "15-20 ml per 20L water",
-                methodPoints: [
-                  "Apply as a foliar spray targeting affected areas",
-                  "Ensure thorough coverage of plant surfaces",
-                  "Repeat after 7-14 days if needed",
-                ],
-                safeDays: 14,
-                safetyPoints: [
-                  "Wear protective equipment during application",
-                  "Keep away from water sources and children",
-                ],
-                brands: selectedBrands,
+                activeIngredient:
+                  control.activeIngredient ||
+                  `${control.name.split(" ")[0]} ${Math.floor(Math.random() * 30) + 20} g/L EC`,
+                applicationRate: control.applicationRate || "1 ml/L water",
+                brands: control.brands || selectedBrands,
               });
             });
           }
@@ -312,22 +274,11 @@ const AiChat = () => {
 
             chemicalControls.push({
               name: controlType,
-              type: controlType,
               activeIngredient:
                 controlType === "Insecticide"
                   ? "Lambda-cyhalothrin 5% EC"
                   : "Metalaxyl-M + Mancozeb 68% WP",
-              applicationRate: "15-20 ml per 20L water",
-              methodPoints: [
-                "Apply as a foliar spray targeting affected areas",
-                "Ensure thorough coverage of plant surfaces",
-                "Repeat after 7-14 days if needed",
-              ],
-              safeDays: 14,
-              safetyPoints: [
-                "Wear protective equipment during application",
-                "Keep away from water sources and children",
-              ],
+              applicationRate: "1 ml/L water",
               brands: brands,
             });
           }
@@ -338,22 +289,13 @@ const AiChat = () => {
             result.controlMeasures?.organic &&
             result.controlMeasures.organic.length > 0
           ) {
-            result.controlMeasures.organic.forEach((control) => {
-              organicControls.push({
-                name: control.name,
-                activeIngredient: "Natural extract",
-                applicationRate: "50-100 ml per 20L water",
-                methodPoints: [
-                  "Apply as a foliar spray in early morning or evening",
-                  "Focus on undersides of leaves where pests hide",
-                  "Repeat application every 5-7 days",
-                ],
-                safeDays: 1,
-                safetyPoints: [
-                  "Safe for beneficial insects when dry",
-                  "Can be applied up to day of harvest",
-                ],
-              });
+            // Limit to 1 organic control
+            const organicControl = result.controlMeasures.organic[0];
+            organicControls.push({
+              name: organicControl.name,
+              activeIngredient:
+                organicControl.activeIngredient || "Azadirachtin",
+              applicationRate: organicControl.applicationRate || "5 ml/L water",
             });
           }
 
@@ -363,17 +305,7 @@ const AiChat = () => {
               name:
                 result.type === "pest" ? "Neem Oil Extract" : "Garlic Extract",
               activeIngredient: "Azadirachtin / Allicin",
-              applicationRate: "50-100 ml per 20L water",
-              methodPoints: [
-                "Apply as a foliar spray in early morning or evening",
-                "Focus on undersides of leaves where pests hide",
-                "Repeat application every 5-7 days",
-              ],
-              safeDays: 1,
-              safetyPoints: [
-                "Safe for beneficial insects when dry",
-                "Can be applied up to day of harvest",
-              ],
+              applicationRate: "5 ml/L water",
             });
           }
 

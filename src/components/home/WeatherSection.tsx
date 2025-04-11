@@ -16,4 +16,5 @@ const WeatherSection = () => {
   );
 };
 
+export { WeatherSection };
 export default WeatherSection;

@@ -5,6 +5,7 @@ import {
   AlertCircle,
   CheckCircle2,
   MoreVertical,
+  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -16,6 +17,7 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 interface Task {
   id: string;
@@ -239,7 +241,7 @@ const TaskSummary = ({
   );
 
   return (
-    <div className="bg-background dark:bg-gray-800 rounded-xl border border-border p-4 w-full h-full overflow-hidden">
+    <div className="bg-background dark:bg-gray-800 rounded-xl border border-border p-4 w-full h-full flex flex-col">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2 sm:gap-0">
         <h2 className="text-xl font-semibold">Task Summary</h2>
         <div className="flex flex-wrap gap-2">
@@ -269,13 +271,16 @@ const TaskSummary = ({
               };
               onAddTask(newTask);
             }}
+            asChild
           >
-            + Add Task
+            <Link to="/task-planner" className="flex items-center gap-1">
+              + Add Task
+            </Link>
           </Button>
         </div>
       </div>
 
-      <div className="overflow-y-auto h-[calc(100%-3rem)] pr-2">
+      <div className="overflow-y-auto flex-1 pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent max-h-[500px] md:max-h-[600px]">
         {/* Overdue Tasks */}
         {overdueTasks.length > 0 && (
           <div className="mb-4">

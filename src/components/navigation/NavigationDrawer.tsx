@@ -8,6 +8,7 @@ import {
   ChevronRight,
   LogOut,
   BarChart3,
+  CalendarCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -43,10 +44,16 @@ const navigationItems: NavigationItem[] = [
     description: "View your farm overview",
   },
   {
-    name: "AI Assistant",
-    path: "/ai-chat",
+    name: "Task Planner",
+    path: "/task-planner",
+    icon: <CalendarCheck className="h-5 w-5" />,
+    description: "Manage your farm tasks and activities",
+  },
+  {
+    name: "Garden Identifier",
+    path: "/garden-identifier",
     icon: <MessageSquare className="h-5 w-5" />,
-    description: "AI chat and plant identification",
+    description: "Identify and track garden pests and diseases",
   },
   {
     name: "Inventory",

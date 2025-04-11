@@ -104,10 +104,17 @@ const PlantIdentifier = () => {
           status: "error",
           message:
             "No plants or agricultural elements were detected in this image. Please upload a clear image of a plant, pest, or disease.",
+          identification: {
+            name: "Analysis Failed",
+            confidence: 0,
+            type: "unknown",
+            description:
+              "Unable to identify any plants, pests, or diseases in this image. Please try with a clearer image.",
+          },
         };
         responseContent = JSON.stringify(errorResponse, null, 2);
       } else {
-        // Create a structured JSON response with bullet points
+        // Create a structured JSON response with concise information
         const culturalPractices = [
           "Practice crop rotation with non-cereal crops",
           "Plant early to avoid peak pest populations",
@@ -122,24 +129,40 @@ const PlantIdentifier = () => {
           result.controlMeasures?.chemical &&
           result.controlMeasures.chemical.length > 0
         ) {
-          result.controlMeasures.chemical.forEach((control) => {
+          // Limit to 2 chemical controls
+          const limitedChemicals = result.controlMeasures.chemical.slice(0, 2);
+          limitedChemicals.forEach((control) => {
+            // Kenya-specific brands for common pesticides
+            const kenyaBrands = {
+              Insecticide: ["Duduthrin", "Tata Alpha", "Cyclone", "Atom"],
+              Fungicide: [
+                "Mistress",
+                "Milraz",
+                "Ridomil",
+                "Amistartop",
+                "Victory",
+              ],
+              Herbicide: ["Roundup", "Twigasate", "Touchdown", "Weedall"],
+              Acaricide: ["Omite", "Dynamec", "Oberon", "Acramite"],
+              Bactericide: ["Cuprocaffaro", "Cobox", "Kocide", "Starner"],
+            };
+
+            // Determine control type
+            let controlType = "Insecticide";
+            if (result.type === "disease") controlType = "Fungicide";
+
+            // Get two random brands for this type
+            const availableBrands =
+              kenyaBrands[controlType] || kenyaBrands["Insecticide"];
+            const selectedBrands = availableBrands.slice(0, 2);
+
             chemicalControls.push({
               name: control.name,
-              activeIngredient: `${control.name.split(" ")[0]} ${Math.floor(Math.random() * 30) + 20} g/L EC`,
-              applicationRate: "1 ml/L water",
-              methodPoints: [
-                "Apply as a foliar spray targeting affected areas",
-                "Ensure thorough coverage of plant surfaces",
-                "Repeat application after 7-10 days if needed",
-                "Apply during early morning or late evening",
-              ],
-              safeDays: 14,
-              safetyPoints: [
-                "Wear protective gloves and eyewear",
-                "Avoid skin and eye contact",
-                "Keep children and pets away from treated areas",
-                "Do not apply near water sources",
-              ],
+              activeIngredient:
+                control.activeIngredient ||
+                `${control.name.split(" ")[0]} ${Math.floor(Math.random() * 30) + 20} g/L EC`,
+              applicationRate: control.applicationRate || "1 ml/L water",
+              brands: control.brands || selectedBrands,
             });
           });
         }
@@ -150,25 +173,12 @@ const PlantIdentifier = () => {
           result.controlMeasures?.organic &&
           result.controlMeasures.organic.length > 0
         ) {
-          result.controlMeasures.organic.forEach((control) => {
-            organicControls.push({
-              name: control.name,
-              activeIngredient: "Azadirachtin",
-              applicationRate: "5 ml/L water",
-              methodPoints: [
-                "Apply as a foliar spray covering all plant surfaces",
-                "Focus on undersides of leaves where pests hide",
-                "Repeat application every 5-7 days",
-                "Best applied in early morning or evening",
-              ],
-              safeDays: 0,
-              safetyPoints: [
-                "Wear gloves during preparation and application",
-                "Avoid eye contact",
-                "Do not spray during hot, sunny conditions",
-                "Safe for beneficial insects when dry",
-              ],
-            });
+          // Limit to 1 organic control
+          const organicControl = result.controlMeasures.organic[0];
+          organicControls.push({
+            name: organicControl.name,
+            activeIngredient: organicControl.activeIngredient || "Azadirachtin",
+            applicationRate: organicControl.applicationRate || "5 ml/L water",
           });
         }
 
@@ -255,6 +265,13 @@ const PlantIdentifier = () => {
       const errorResponse = {
         status: "error",
         message: `Sorry, I encountered an error processing your image: ${error instanceof Error ? error.message : "Unknown error"}. Please try again with a clearer image.`,
+        identification: {
+          name: "Analysis Failed",
+          confidence: 0,
+          type: "unknown",
+          description:
+            "Unable to process the image. Please try with a clearer image or check your internet connection.",
+        },
       };
       setIdentificationResult(JSON.stringify(errorResponse, null, 2));
     } finally {

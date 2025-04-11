@@ -8,6 +8,7 @@ import {
   Search,
   Filter,
   RefreshCw,
+  Info,
 } from "lucide-react";
 import AppLayout from "@/components/layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -15,14 +16,25 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import InputDetails, {
+  InputItem,
+  UsageRecord,
+} from "@/components/inventory/InputDetails";
+import OutputDetails, {
+  OutputItem,
+  HarvestRecord,
+} from "@/components/inventory/OutputDetails";
+import InventoryCharts from "@/components/inventory/InventoryCharts";
 
 const Inventory = () => {
   const [activeTab, setActiveTab] = useState("inputs");
   const [isLoading, setIsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedInputId, setSelectedInputId] = useState<string | null>(null);
+  const [selectedOutputId, setSelectedOutputId] = useState<string | null>(null);
 
-  // Mock inventory data
-  const inputs = [
+  // Mock inventory data with extended properties
+  const [inputs, setInputs] = useState<InputItem[]>([
     {
       id: "1",
       name: "NPK Fertilizer",
@@ -31,6 +43,26 @@ const Inventory = () => {
       unit: "kg",
       lastUpdated: "2023-07-10",
       status: "In Stock",
+      supplier: "AgriSupply Co.",
+      purchasePrice: 45.99,
+      usageHistory: [
+        {
+          id: "u1",
+          date: "2023-07-01",
+          quantity: 50,
+          purpose: "Fertilizing",
+          fieldOrCrop: "Maize Field - North",
+          notes: "Applied before rainfall",
+        },
+        {
+          id: "u2",
+          date: "2023-06-15",
+          quantity: 75,
+          purpose: "Fertilizing",
+          fieldOrCrop: "Tomato Greenhouse",
+          notes: "Split application",
+        },
+      ],
     },
     {
       id: "2",
@@ -40,6 +72,18 @@ const Inventory = () => {
       unit: "packets",
       lastUpdated: "2023-07-12",
       status: "Low Stock",
+      supplier: "SeedTech Ltd",
+      purchasePrice: 3.5,
+      usageHistory: [
+        {
+          id: "u3",
+          date: "2023-07-10",
+          quantity: 25,
+          purpose: "Planting",
+          fieldOrCrop: "Greenhouse Section A",
+          notes: "Roma variety",
+        },
+      ],
     },
     {
       id: "3",
@@ -49,6 +93,9 @@ const Inventory = () => {
       unit: "liters",
       lastUpdated: "2023-07-08",
       status: "In Stock",
+      supplier: "OrganicFarm Solutions",
+      purchasePrice: 12.75,
+      usageHistory: [],
     },
     {
       id: "4",
@@ -58,6 +105,18 @@ const Inventory = () => {
       unit: "pieces",
       lastUpdated: "2023-06-30",
       status: "In Stock",
+      supplier: "FarmTech Equipment",
+      purchasePrice: 8.25,
+      usageHistory: [
+        {
+          id: "u4",
+          date: "2023-06-28",
+          quantity: 5,
+          purpose: "Irrigation",
+          fieldOrCrop: "Vegetable Garden",
+          notes: "Replaced damaged sections",
+        },
+      ],
     },
     {
       id: "5",
@@ -67,10 +126,30 @@ const Inventory = () => {
       unit: "bags",
       lastUpdated: "2023-07-14",
       status: "Low Stock",
+      supplier: "Livestock Supplies Inc.",
+      purchasePrice: 22.5,
+      usageHistory: [
+        {
+          id: "u5",
+          date: "2023-07-14",
+          quantity: 2,
+          purpose: "Feeding",
+          fieldOrCrop: "Poultry House A",
+          notes: "Morning feeding",
+        },
+        {
+          id: "u6",
+          date: "2023-07-07",
+          quantity: 3,
+          purpose: "Feeding",
+          fieldOrCrop: "Poultry House B",
+          notes: "Weekly supply",
+        },
+      ],
     },
-  ];
+  ]);
 
-  const outputs = [
+  const [outputs, setOutputs] = useState<OutputItem[]>([
     {
       id: "1",
       name: "Tomatoes",
@@ -79,6 +158,26 @@ const Inventory = () => {
       unit: "kg",
       harvestDate: "2023-07-05",
       status: "Ready for Sale",
+      quality: "Excellent",
+      storageLocation: "Cold Storage Room 1",
+      harvestHistory: [
+        {
+          id: "h1",
+          date: "2023-07-05",
+          quantity: 120,
+          quality: "Excellent",
+          fieldOrLocation: "Greenhouse A",
+          notes: "First harvest of the season",
+        },
+        {
+          id: "h2",
+          date: "2023-07-01",
+          quantity: 80,
+          quality: "Good",
+          fieldOrLocation: "Greenhouse B",
+          notes: "Slightly smaller fruits",
+        },
+      ],
     },
     {
       id: "2",
@@ -88,6 +187,26 @@ const Inventory = () => {
       unit: "dozens",
       harvestDate: "2023-07-15",
       status: "Ready for Sale",
+      quality: "Good",
+      storageLocation: "Egg Storage Room",
+      harvestHistory: [
+        {
+          id: "h3",
+          date: "2023-07-15",
+          quantity: 250,
+          quality: "Good",
+          fieldOrLocation: "Chicken Coop A",
+          notes: "Weekly collection",
+        },
+        {
+          id: "h4",
+          date: "2023-07-08",
+          quantity: 250,
+          quality: "Good",
+          fieldOrLocation: "Chicken Coop B",
+          notes: "Weekly collection",
+        },
+      ],
     },
     {
       id: "3",
@@ -97,6 +216,18 @@ const Inventory = () => {
       unit: "kg",
       harvestDate: "2023-06-28",
       status: "Stored",
+      quality: "Good",
+      storageLocation: "Grain Silo 2",
+      harvestHistory: [
+        {
+          id: "h5",
+          date: "2023-06-28",
+          quantity: 1000,
+          quality: "Good",
+          fieldOrLocation: "North Field",
+          notes: "Main season harvest",
+        },
+      ],
     },
     {
       id: "4",
@@ -106,17 +237,61 @@ const Inventory = () => {
       unit: "liters",
       harvestDate: "2023-07-15",
       status: "Ready for Sale",
+      quality: "Excellent",
+      storageLocation: "Refrigerated Storage",
+      harvestHistory: [
+        {
+          id: "h6",
+          date: "2023-07-15",
+          quantity: 50,
+          quality: "Excellent",
+          fieldOrLocation: "Dairy Barn",
+          notes: "Morning milking",
+        },
+        {
+          id: "h7",
+          date: "2023-07-14",
+          quantity: 50,
+          quality: "Excellent",
+          fieldOrLocation: "Dairy Barn",
+          notes: "Evening milking",
+        },
+      ],
     },
-  ];
+  ]);
 
   // Filter data based on search query
-  const filteredInputs = inputs.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  const filteredInputs = inputs.filter(
+    (item) =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.category.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const filteredOutputs = outputs.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase()),
+  const filteredOutputs = outputs.filter(
+    (item) =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.category.toLowerCase().includes(searchQuery.toLowerCase()),
   );
+
+  // Get selected input and output
+  const selectedInput =
+    inputs.find((item) => item.id === selectedInputId) || null;
+  const selectedOutput =
+    outputs.find((item) => item.id === selectedOutputId) || null;
+
+  // Handle input update
+  const handleInputUpdate = (updatedItem: InputItem) => {
+    setInputs(
+      inputs.map((item) => (item.id === updatedItem.id ? updatedItem : item)),
+    );
+  };
+
+  // Handle output update
+  const handleOutputUpdate = (updatedItem: OutputItem) => {
+    setOutputs(
+      outputs.map((item) => (item.id === updatedItem.id ? updatedItem : item)),
+    );
+  };
 
   // Calculate inventory stats
   const calculateStats = () => {
@@ -347,7 +522,11 @@ const Inventory = () => {
                     </tr>
                   ) : filteredInputs.length > 0 ? (
                     filteredInputs.map((item) => (
-                      <tr key={item.id} className="border-b hover:bg-muted/50">
+                      <tr
+                        key={item.id}
+                        className="border-b hover:bg-muted/50 cursor-pointer"
+                        onClick={() => setSelectedInputId(item.id)}
+                      >
                         <td className="py-3 px-4 font-medium">{item.name}</td>
                         <td className="py-3 px-4">{item.category}</td>
                         <td className="py-3 px-4">
@@ -360,8 +539,15 @@ const Inventory = () => {
                           {getStatusBadge(item.status)}
                         </td>
                         <td className="py-3 px-4">
-                          <Button variant="ghost" size="sm">
-                            Edit
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedInputId(item.id);
+                            }}
+                          >
+                            <Info className="h-4 w-4 mr-1" /> Details
                           </Button>
                         </td>
                       </tr>
@@ -413,7 +599,11 @@ const Inventory = () => {
                     </tr>
                   ) : filteredOutputs.length > 0 ? (
                     filteredOutputs.map((item) => (
-                      <tr key={item.id} className="border-b hover:bg-muted/50">
+                      <tr
+                        key={item.id}
+                        className="border-b hover:bg-muted/50 cursor-pointer"
+                        onClick={() => setSelectedOutputId(item.id)}
+                      >
                         <td className="py-3 px-4 font-medium">{item.name}</td>
                         <td className="py-3 px-4">{item.category}</td>
                         <td className="py-3 px-4">
@@ -426,8 +616,15 @@ const Inventory = () => {
                           {getStatusBadge(item.status)}
                         </td>
                         <td className="py-3 px-4">
-                          <Button variant="ghost" size="sm">
-                            Edit
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedOutputId(item.id);
+                            }}
+                          >
+                            <Info className="h-4 w-4 mr-1" /> Details
                           </Button>
                         </td>
                       </tr>
@@ -449,54 +646,34 @@ const Inventory = () => {
 
           {/* Analytics Tab */}
           <TabsContent value="analytics" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Input Usage Trends</CardTitle>
-                </CardHeader>
-                <CardContent className="h-[300px] flex items-center justify-center">
-                  <div className="text-center text-muted-foreground">
-                    <Package className="h-16 w-16 mx-auto mb-4 text-muted" />
-                    <p>Input usage analytics will be displayed here</p>
-                    <p className="text-sm mt-2">
-                      Track your farm input consumption over time
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Harvest Yields</CardTitle>
-                </CardHeader>
-                <CardContent className="h-[300px] flex items-center justify-center">
-                  <div className="text-center text-muted-foreground">
-                    <BarChart3 className="h-16 w-16 mx-auto mb-4 text-muted" />
-                    <p>Harvest yield analytics will be displayed here</p>
-                    <p className="text-sm mt-2">
-                      Compare yields across different crops and seasons
-                    </p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Inventory Value Over Time</CardTitle>
-              </CardHeader>
-              <CardContent className="h-[300px] flex items-center justify-center">
-                <div className="text-center text-muted-foreground">
-                  <p>
-                    This feature is coming soon. Track the value of your
-                    inventory over time.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
+            <InventoryCharts inputs={inputs} outputs={outputs} />
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Input Details Dialog */}
+      {selectedInput && (
+        <InputDetails
+          item={selectedInput}
+          open={!!selectedInputId}
+          onOpenChange={(open) => {
+            if (!open) setSelectedInputId(null);
+          }}
+          onUpdate={handleInputUpdate}
+        />
+      )}
+
+      {/* Output Details Dialog */}
+      {selectedOutput && (
+        <OutputDetails
+          item={selectedOutput}
+          open={!!selectedOutputId}
+          onOpenChange={(open) => {
+            if (!open) setSelectedOutputId(null);
+          }}
+          onUpdate={handleOutputUpdate}
+        />
+      )}
     </AppLayout>
   );
 };

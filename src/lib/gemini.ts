@@ -73,28 +73,22 @@ If a pest or disease is identified, provide a detailed analysis in the following
 1. Name: The identified pest or disease name
 2. Type: Whether it's a pest or disease
 3. Confidence: Your confidence level in the identification (as a percentage)
-4. Description: A brief description of the pest or disease
-5. Causes: List the main causes or conditions that lead to this pest or disease
+4. Description: A brief description of the pest or disease in 1-2 sentences
+5. Causes: List 2-3 main causes or conditions that lead to this pest or disease
 6. Control Methods:
-   a. Chemical Control: For each chemical control option, provide:
+   a. Chemical Control: For each chemical control option (limit to 2), provide:
       - Name of the chemical/product
-      - Active Ingredient
+      - Active Ingredient (format as: "Active ingredient 25 g/L EC")
       - Application Rate (e.g., "1 ml/L water")
-      - Method of application
-      - Safe Days before harvest
-      - Safety precautions
       - At least two specific brand names available in ${userCountry}
-   b. Organic Control: For each organic control option, provide:
+   b. Organic Control: For each organic control option (limit to 1), provide:
       - Name of the organic solution
       - Active Ingredient
       - Application Rate
-      - Method of application
-      - Safe Days before harvest
-      - Safety precautions
-   c. Cultural Control: List cultural practices to prevent or manage the issue
-7. Plants Affected: List of crops commonly affected by this pest or disease
+   c. Cultural Control: List 3-5 cultural practices to prevent or manage the issue
+7. Plants Affected: List of crops commonly affected by this pest or disease (limit to 5)
 
-Format your response to be easily parsed by a computer program. Be concise but thorough.`,
+Keep your response concise and focused on the most important information. Format it to be easily read by farmers.`,
             },
             {
               inline_data: {
@@ -343,91 +337,508 @@ Format your response to be easily parsed by a computer program. Be concise but t
       }
     }
 
-    // Extract plants affected
-    const plantsAffectedSection = responseText.match(
-      /Plants Affected:[\s\S]*?$/i,
-    );
-    let plantsAffected: string[] = [];
-    if (plantsAffectedSection) {
-      plantsAffected = plantsAffectedSection[0]
-        .replace(/Plants Affected:\s*/i, "")
-        .split(/\n-|\n\d\./) // Split by bullet points or numbered lists
-        .map((item) => item.trim())
-        .filter((item) => item.length > 0);
-    }
-
     // Default values for chemical controls if none found
     if (controlMeasures.chemical.length === 0) {
-      const defaultChemical =
-        type === "pest"
-          ? {
-              name: "Deltamethrin",
-              activeIngredient: "Deltamethrin 25 g/L EC",
-              applicationRate: "1 ml/L water",
-              methodPoints: [
-                "Apply as a foliar spray",
-                "Ensure thorough coverage of the plant",
-                "Repeat after 7-10 days if infestation persists",
-              ],
-              safeDays: 14,
-              safetyPoints: [
-                "Wear protective equipment during application",
-                "Keep away from water sources",
-                "Avoid contact with skin and eyes",
-              ],
-              brands: ["Duduthrin", "Tata Alpha"],
-            }
-          : {
-              name: "Mancozeb",
-              activeIngredient: "Mancozeb 80% WP",
-              applicationRate: "2-3 g/L water",
-              methodPoints: [
-                "Apply as a preventive spray",
-                "Ensure thorough coverage of the plant",
-                "Repeat every 7-14 days",
-              ],
-              safeDays: 7,
-              safetyPoints: [
-                "Wear protective equipment during application",
-                "Keep away from water sources",
-                "Avoid contact with skin and eyes",
-              ],
-              brands: ["Oshothane", "Dithane M-45"],
-            };
+      // Provide different default chemicals based on the pest/disease name or type
+      let defaultChemical;
+
+      // Check for common pests and diseases in the name
+      const nameLower = name.toLowerCase();
+
+      if (type === "pest") {
+        if (nameLower.includes("aphid")) {
+          defaultChemical = {
+            name: "Imidacloprid",
+            activeIngredient: "Imidacloprid 17.8% SL",
+            applicationRate: "0.5 ml/L water",
+            methodPoints: [
+              "Apply as a foliar spray targeting the undersides of leaves",
+              "Can also be applied as a soil drench for systemic protection",
+              "Repeat after 14 days if infestation persists",
+            ],
+            safeDays: 21,
+            safetyPoints: [
+              "Highly toxic to bees - do not apply during flowering",
+              "Wear protective equipment during application",
+              "Keep away from water sources",
+            ],
+            brands: ["Confidor", "Admire"],
+          };
+        } else if (nameLower.includes("mite") || nameLower.includes("spider")) {
+          defaultChemical = {
+            name: "Abamectin",
+            activeIngredient: "Abamectin 1.8% EC",
+            applicationRate: "0.5 ml/L water",
+            methodPoints: [
+              "Apply as a foliar spray ensuring complete coverage",
+              "Target the undersides of leaves where mites congregate",
+              "Repeat after 7 days if infestation persists",
+            ],
+            safeDays: 7,
+            safetyPoints: [
+              "Toxic to fish and aquatic organisms",
+              "Wear protective equipment during application",
+              "Avoid application during hot periods of the day",
+            ],
+            brands: ["Dynamec", "Agrimec"],
+          };
+        } else if (nameLower.includes("thrip")) {
+          defaultChemical = {
+            name: "Spinosad",
+            activeIngredient: "Spinosad 45% SC",
+            applicationRate: "0.3 ml/L water",
+            methodPoints: [
+              "Apply as a foliar spray ensuring thorough coverage",
+              "Target growing points and flowers where thrips hide",
+              "Repeat after 7-10 days if infestation persists",
+            ],
+            safeDays: 3,
+            safetyPoints: [
+              "Low toxicity to mammals but toxic to bees when wet",
+              "Avoid application during flowering or apply in evening",
+              "Wear protective equipment during application",
+            ],
+            brands: ["Success", "Tracer"],
+          };
+        } else if (
+          nameLower.includes("caterpillar") ||
+          nameLower.includes("worm") ||
+          nameLower.includes("moth")
+        ) {
+          defaultChemical = {
+            name: "Bacillus thuringiensis (Bt)",
+            activeIngredient: "Bacillus thuringiensis kurstaki 32,000 IU/mg WP",
+            applicationRate: "1-2 g/L water",
+            methodPoints: [
+              "Apply as a foliar spray targeting young larvae",
+              "Best applied in the evening as UV light degrades the bacteria",
+              "Repeat every 5-7 days during heavy infestation",
+            ],
+            safeDays: 0,
+            safetyPoints: [
+              "Safe for humans, beneficial insects, and the environment",
+              "Can be used up to day of harvest",
+              "Store in a cool, dry place to maintain efficacy",
+            ],
+            brands: ["Dipel", "Thuricide"],
+          };
+        } else if (
+          nameLower.includes("beetle") ||
+          nameLower.includes("weevil")
+        ) {
+          defaultChemical = {
+            name: "Lambda-cyhalothrin",
+            activeIngredient: "Lambda-cyhalothrin 5% EC",
+            applicationRate: "1 ml/L water",
+            methodPoints: [
+              "Apply as a foliar spray ensuring thorough coverage",
+              "Target adults during their active feeding periods",
+              "Repeat after 10-14 days if infestation persists",
+            ],
+            safeDays: 14,
+            safetyPoints: [
+              "Toxic to bees and aquatic organisms",
+              "Wear protective equipment during application",
+              "Keep children and pets away from treated areas until dry",
+            ],
+            brands: ["Karate", "Ninja"],
+          };
+        } else {
+          // Default pest control if no specific pest type is identified
+          defaultChemical = {
+            name: "Deltamethrin",
+            activeIngredient: "Deltamethrin 25 g/L EC",
+            applicationRate: "1 ml/L water",
+            methodPoints: [
+              "Apply as a foliar spray",
+              "Ensure thorough coverage of the plant",
+              "Repeat after 7-10 days if infestation persists",
+            ],
+            safeDays: 14,
+            safetyPoints: [
+              "Wear protective equipment during application",
+              "Keep away from water sources",
+              "Avoid contact with skin and eyes",
+            ],
+            brands: ["Duduthrin", "Tata Alpha"],
+          };
+        }
+      } else {
+        // Disease controls
+        if (
+          nameLower.includes("powdery mildew") ||
+          nameLower.includes("mildew")
+        ) {
+          defaultChemical = {
+            name: "Tebuconazole",
+            activeIngredient: "Tebuconazole 25% WP",
+            applicationRate: "1 g/L water",
+            methodPoints: [
+              "Apply as a preventive spray at first signs of disease",
+              "Ensure thorough coverage of upper and lower leaf surfaces",
+              "Repeat every 10-14 days during favorable conditions",
+            ],
+            safeDays: 7,
+            safetyPoints: [
+              "Wear protective equipment during application",
+              "Avoid application during windy conditions",
+              "Keep away from water bodies",
+            ],
+            brands: ["Folicur", "Orius"],
+          };
+        } else if (nameLower.includes("rust")) {
+          defaultChemical = {
+            name: "Propiconazole",
+            activeIngredient: "Propiconazole 25% EC",
+            applicationRate: "1 ml/L water",
+            methodPoints: [
+              "Apply at first signs of disease",
+              "Ensure thorough coverage of all plant surfaces",
+              "Repeat every 14-21 days if conditions favor disease",
+            ],
+            safeDays: 14,
+            safetyPoints: [
+              "Wear protective equipment during application",
+              "Avoid contact with skin and eyes",
+              "Keep away from water sources",
+            ],
+            brands: ["Tilt", "Bumper"],
+          };
+        } else if (
+          nameLower.includes("blight") ||
+          nameLower.includes("late blight")
+        ) {
+          defaultChemical = {
+            name: "Metalaxyl + Mancozeb",
+            activeIngredient: "Metalaxyl 8% + Mancozeb 64% WP",
+            applicationRate: "2.5 g/L water",
+            methodPoints: [
+              "Apply as a preventive spray before disease onset",
+              "Ensure thorough coverage of all plant surfaces",
+              "Repeat every 7-10 days during rainy periods",
+            ],
+            safeDays: 14,
+            safetyPoints: [
+              "Wear protective equipment during application",
+              "Avoid contact with skin and eyes",
+              "Keep away from water sources",
+            ],
+            brands: ["Ridomil Gold", "Victory"],
+          };
+        } else if (nameLower.includes("anthracnose")) {
+          defaultChemical = {
+            name: "Chlorothalonil",
+            activeIngredient: "Chlorothalonil 75% WP",
+            applicationRate: "2 g/L water",
+            methodPoints: [
+              "Apply as a preventive spray",
+              "Ensure thorough coverage of all plant surfaces",
+              "Repeat every 7-14 days during wet conditions",
+            ],
+            safeDays: 7,
+            safetyPoints: [
+              "Wear protective equipment during application",
+              "Avoid contact with skin and eyes",
+              "Keep away from water sources",
+            ],
+            brands: ["Bravo", "Daconil"],
+          };
+        } else if (nameLower.includes("wilt") || nameLower.includes("rot")) {
+          defaultChemical = {
+            name: "Copper Oxychloride",
+            activeIngredient: "Copper Oxychloride 50% WP",
+            applicationRate: "3 g/L water",
+            methodPoints: [
+              "Apply as a soil drench around the base of plants",
+              "Can also be applied as a foliar spray",
+              "Repeat every 7-14 days during disease-favorable conditions",
+            ],
+            safeDays: 7,
+            safetyPoints: [
+              "Wear protective equipment during application",
+              "May cause phytotoxicity in some crops in hot weather",
+              "Keep away from water sources",
+            ],
+            brands: ["Cobox", "Cuprocaffaro"],
+          };
+        } else {
+          // Default disease control if no specific disease type is identified
+          defaultChemical = {
+            name: "Mancozeb",
+            activeIngredient: "Mancozeb 80% WP",
+            applicationRate: "2-3 g/L water",
+            methodPoints: [
+              "Apply as a preventive spray",
+              "Ensure thorough coverage of the plant",
+              "Repeat every 7-14 days",
+            ],
+            safeDays: 7,
+            safetyPoints: [
+              "Wear protective equipment during application",
+              "Keep away from water sources",
+              "Avoid contact with skin and eyes",
+            ],
+            brands: ["Oshothane", "Dithane M-45"],
+          };
+        }
+      }
 
       controlMeasures.chemical.push(defaultChemical);
     }
 
+    // Ensure each chemical control has at least two brands
+    controlMeasures.chemical.forEach((chemical) => {
+      if (!chemical.brands || chemical.brands.length < 2) {
+        // If no brands, add two generic ones
+        if (!chemical.brands || chemical.brands.length === 0) {
+          chemical.brands = [`${chemical.name} Plus`, `${chemical.name} Gold`];
+        }
+        // If only one brand, add a second one
+        else if (chemical.brands.length === 1) {
+          chemical.brands.push(`${chemical.brands[0]} Premium`);
+        }
+      }
+    });
+
     // Default values for organic controls if none found
     if (controlMeasures.organic.length === 0) {
-      const defaultOrganic = {
-        name: "Neem Oil",
-        activeIngredient: "Azadirachtin",
-        applicationRate: "5 ml/L water",
-        methodPoints: [
-          "Apply as a foliar spray",
-          "Ensure thorough coverage",
-          "Repeat every 5-7 days",
-        ],
-        safeDays: 0,
-        safetyPoints: [
-          "Wear gloves during application",
-          "Avoid spraying during hot, sunny conditions",
-        ],
-      };
+      // Provide different default organic controls based on the pest/disease name or type
+      let defaultOrganic;
+
+      const nameLower = name.toLowerCase();
+
+      if (type === "pest") {
+        if (
+          nameLower.includes("aphid") ||
+          nameLower.includes("mite") ||
+          nameLower.includes("thrip")
+        ) {
+          defaultOrganic = {
+            name: "Neem Oil",
+            activeIngredient: "Azadirachtin",
+            applicationRate: "5 ml/L water",
+            methodPoints: [
+              "Apply as a foliar spray ensuring complete coverage",
+              "Target the undersides of leaves where pests hide",
+              "Repeat every 5-7 days until infestation subsides",
+            ],
+            safeDays: 0,
+            safetyPoints: [
+              "Safe for most beneficial insects when dry",
+              "Apply in evening to prevent leaf burn and protect pollinators",
+              "Avoid spraying during flowering if possible",
+            ],
+          };
+        } else if (
+          nameLower.includes("caterpillar") ||
+          nameLower.includes("worm")
+        ) {
+          defaultOrganic = {
+            name: "Bacillus thuringiensis (Bt)",
+            activeIngredient: "Bacillus thuringiensis kurstaki",
+            applicationRate: "1-2 g/L water",
+            methodPoints: [
+              "Apply as a foliar spray targeting young larvae",
+              "Best applied in the evening as UV light degrades the bacteria",
+              "Repeat every 5-7 days during heavy infestation",
+            ],
+            safeDays: 0,
+            safetyPoints: [
+              "Safe for humans, beneficial insects, and the environment",
+              "Can be used up to day of harvest",
+              "Store in a cool, dry place to maintain efficacy",
+            ],
+          };
+        } else if (
+          nameLower.includes("beetle") ||
+          nameLower.includes("weevil")
+        ) {
+          defaultOrganic = {
+            name: "Diatomaceous Earth",
+            activeIngredient: "Silicon dioxide from fossilized diatoms",
+            applicationRate: "Apply as a dust to soil surface or plants",
+            methodPoints: [
+              "Apply as a dust around plants or on foliage",
+              "Reapply after rain or heavy dew",
+              "Creates a physical barrier that damages insect exoskeletons",
+            ],
+            safeDays: 0,
+            safetyPoints: [
+              "Wear a dust mask during application",
+              "Food grade diatomaceous earth is safe around edible plants",
+              "May harm beneficial insects with exoskeletons if directly applied",
+            ],
+          };
+        } else {
+          defaultOrganic = {
+            name: "Neem Oil",
+            activeIngredient: "Azadirachtin",
+            applicationRate: "5 ml/L water",
+            methodPoints: [
+              "Apply as a foliar spray",
+              "Ensure thorough coverage",
+              "Repeat every 5-7 days",
+            ],
+            safeDays: 0,
+            safetyPoints: [
+              "Wear gloves during application",
+              "Avoid spraying during hot, sunny conditions",
+            ],
+          };
+        }
+      } else {
+        // Disease organic controls
+        if (
+          nameLower.includes("mildew") ||
+          nameLower.includes("rust") ||
+          nameLower.includes("blight")
+        ) {
+          defaultOrganic = {
+            name: "Copper Soap",
+            activeIngredient: "Copper octanoate",
+            applicationRate: "5-8 ml/L water",
+            methodPoints: [
+              "Apply as a preventive spray before disease appears",
+              "Ensure thorough coverage of all plant surfaces",
+              "Repeat every 7-10 days during disease-favorable conditions",
+            ],
+            safeDays: 0,
+            safetyPoints: [
+              "Less toxic than other copper formulations",
+              "May cause phytotoxicity in some plants in hot weather",
+              "Can be used up to day of harvest",
+            ],
+          };
+        } else if (nameLower.includes("rot") || nameLower.includes("wilt")) {
+          defaultOrganic = {
+            name: "Trichoderma",
+            activeIngredient: "Trichoderma harzianum",
+            applicationRate: "5-10 g/L water",
+            methodPoints: [
+              "Apply as a soil drench around the base of plants",
+              "Can be incorporated into potting soil or compost",
+              "Apply monthly as a preventive measure",
+            ],
+            safeDays: 0,
+            safetyPoints: [
+              "Safe for humans, animals, and beneficial organisms",
+              "Can be used up to day of harvest",
+              "Store in a cool, dry place to maintain viability",
+            ],
+          };
+        } else {
+          defaultOrganic = {
+            name: "Baking Soda Spray",
+            activeIngredient: "Sodium bicarbonate",
+            applicationRate: "5-10 g/L water + 2 ml liquid soap as surfactant",
+            methodPoints: [
+              "Apply as a preventive spray",
+              "Ensure thorough coverage of all plant surfaces",
+              "Repeat every 7-14 days during disease-favorable conditions",
+            ],
+            safeDays: 0,
+            safetyPoints: [
+              "Safe for humans and the environment",
+              "May cause leaf burn if concentration is too high",
+              "Avoid applying in hot, sunny conditions",
+            ],
+          };
+        }
+      }
 
       controlMeasures.organic.push(defaultOrganic);
     }
 
     // Default values for cultural controls if none found
     if (!controlMeasures.cultural || controlMeasures.cultural.length === 0) {
-      controlMeasures.cultural = [
-        "Practice crop rotation",
-        "Maintain proper plant spacing for good air circulation",
-        "Remove and destroy infected plant debris",
-        "Use resistant varieties when available",
-        "Maintain proper field sanitation",
-      ];
+      // Provide different default cultural controls based on the pest/disease name or type
+      let defaultCultural;
+
+      const nameLower = name.toLowerCase();
+
+      if (type === "pest") {
+        if (
+          nameLower.includes("aphid") ||
+          nameLower.includes("mite") ||
+          nameLower.includes("thrip")
+        ) {
+          defaultCultural = [
+            "Introduce beneficial insects like ladybugs, lacewings, or predatory mites",
+            "Use reflective mulches to repel flying insects",
+            "Maintain proper plant nutrition as stressed plants are more susceptible",
+            "Use water sprays to dislodge pests from plants",
+            "Remove heavily infested plant parts",
+          ];
+        } else if (
+          nameLower.includes("caterpillar") ||
+          nameLower.includes("worm") ||
+          nameLower.includes("moth")
+        ) {
+          defaultCultural = [
+            "Handpick and destroy caterpillars and egg masses",
+            "Use pheromone traps to monitor and reduce adult moth populations",
+            "Cover plants with floating row covers during peak egg-laying periods",
+            "Encourage natural predators like birds, wasps, and predatory beetles",
+            "Practice crop rotation to disrupt pest life cycles",
+          ];
+        } else if (
+          nameLower.includes("beetle") ||
+          nameLower.includes("weevil")
+        ) {
+          defaultCultural = [
+            "Use trap crops to lure pests away from main crops",
+            "Implement crop rotation with non-host plants",
+            "Till soil after harvest to expose pupae to predators and weather",
+            "Use sticky traps to monitor and reduce adult populations",
+            "Remove plant debris where pests may overwinter",
+          ];
+        } else {
+          defaultCultural = [
+            "Practice crop rotation",
+            "Maintain proper plant spacing for good air circulation",
+            "Use companion planting to repel pests or attract beneficial insects",
+            "Keep fields weed-free as many weeds host pests",
+            "Maintain proper field sanitation",
+          ];
+        }
+      } else {
+        // Disease cultural controls
+        if (nameLower.includes("mildew") || nameLower.includes("blight")) {
+          defaultCultural = [
+            "Increase plant spacing to improve air circulation",
+            "Avoid overhead irrigation; use drip irrigation instead",
+            "Water in the morning so plants dry quickly",
+            "Prune to improve air circulation within plant canopy",
+            "Remove and destroy infected plant material",
+          ];
+        } else if (nameLower.includes("rot") || nameLower.includes("wilt")) {
+          defaultCultural = [
+            "Improve soil drainage by adding organic matter",
+            "Avoid overwatering and ensure proper irrigation scheduling",
+            "Use raised beds in areas with poor drainage",
+            "Practice crop rotation with non-susceptible crops",
+            "Use disease-free planting material and resistant varieties",
+          ];
+        } else if (nameLower.includes("virus")) {
+          defaultCultural = [
+            "Control insect vectors like aphids and whiteflies",
+            "Remove and destroy infected plants immediately",
+            "Disinfect tools between plants to prevent transmission",
+            "Use virus-free certified seed or planting material",
+            "Control weeds that may serve as virus reservoirs",
+          ];
+        } else {
+          defaultCultural = [
+            "Practice crop rotation",
+            "Maintain proper plant spacing for good air circulation",
+            "Remove and destroy infected plant debris",
+            "Use resistant varieties when available",
+            "Maintain proper field sanitation",
+          ];
+        }
+      }
+
+      controlMeasures.cultural = defaultCultural;
     }
 
     // Create the result object

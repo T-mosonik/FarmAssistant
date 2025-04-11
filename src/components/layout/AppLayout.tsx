@@ -44,7 +44,7 @@ const AppLayout = ({ children }: AppLayoutProps = {}) => {
 
   return (
     <div className="flex h-screen w-screen overflow-hidden bg-background">
-      {/* Navigation Drawer - always in fixed position for all screen sizes */}
+      {/* Navigation Drawer - fixed position with proper mobile handling */}
       <div
         className={cn(
           "z-50 transition-transform duration-300 ease-in-out h-full fixed",
@@ -53,7 +53,10 @@ const AppLayout = ({ children }: AppLayoutProps = {}) => {
             : "translate-x-0 w-[280px] md:w-[300px]",
         )}
       >
-        <NavigationDrawer isOpen={true} onClose={() => setDrawerOpen(false)} />
+        <NavigationDrawer
+          isOpen={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+        />
       </div>
 
       {/* Overlay for when drawer is open */}

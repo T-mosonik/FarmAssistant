@@ -9,6 +9,9 @@ import {
   Shield,
   Sprout,
   AlertTriangle,
+  Info,
+  CheckCircle2,
+  Droplets,
 } from "lucide-react";
 
 interface IdentificationReportProps {
@@ -49,364 +52,220 @@ const IdentificationReport: React.FC<IdentificationReportProps> = ({
     // Handle healthy plant case
     if (data.status === "healthy") {
       return (
-        <Card className="bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-green-700 dark:text-green-400 flex items-center gap-2">
-              <Leaf className="h-5 w-5" />
-              Healthy Plant
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>{data.message}</p>
-          </CardContent>
-        </Card>
+        <div className="text-green-700 dark:text-green-400">
+          <p className="font-medium mb-2">Healthy Plant</p>
+          <p>{data.message}</p>
+        </div>
       );
     }
 
     // Handle error case
     if (data.status === "error") {
       return (
-        <Card className="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-red-700 dark:text-red-400 flex items-center gap-2">
-              <AlertCircle className="h-5 w-5" />
-              Error
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p>{data.message}</p>
-          </CardContent>
-        </Card>
+        <div className="text-red-700 dark:text-red-400">
+          <p className="font-medium mb-2">Error</p>
+          <p>{data.message}</p>
+        </div>
       );
     }
 
     // Handle pest/disease identification
-    const {
-      analysisSummary,
-      identification,
-      causes,
-      controlMethods,
-      affectedPlants,
-    } = data;
+    const { identification, causes, controlMethods, affectedPlants } = data;
+
+    const type = identification?.type || "disease";
 
     return (
       <div className="space-y-4">
-        {/* Analysis Summary */}
-        {analysisSummary && (
-          <Card className="bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800">
-            <CardContent className="pt-4 pb-4">
-              <p className="text-blue-800 dark:text-blue-300 font-medium">
-                {analysisSummary}
-              </p>
-            </CardContent>
-          </Card>
+        {/* Identification Section */}
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-semibold mb-2 flex items-center">
+            {type === "pest" ? (
+              <Bug className="mr-2 h-5 w-5 text-red-500" />
+            ) : (
+              <Leaf className="mr-2 h-5 w-5 text-green-500" />
+            )}
+            {identification.name}
+            <Badge className="ml-2 bg-blue-100 text-blue-800 border-blue-300">
+              {identification.confidence}% confidence
+            </Badge>
+          </h3>
+          <p className="text-gray-700 dark:text-gray-300">
+            {identification.description}
+          </p>
+        </div>
+
+        {/* Causes Section */}
+        {causes && causes.length > 0 && (
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <h4 className="font-medium mb-2 flex items-center">
+              <Info className="mr-2 h-4 w-4 text-blue-500" />
+              Causes
+            </h4>
+            <ul className="text-gray-700 dark:text-gray-300 space-y-1 pl-6 list-disc">
+              {causes.map((cause, index) => (
+                <li key={index}>{cause}</li>
+              ))}
+            </ul>
+          </div>
         )}
 
-        {/* Identification Section */}
-        <Card>
-          <CardHeader className="pb-2 border-b">
-            <div className="flex justify-between items-center">
-              <CardTitle className="text-xl font-bold">
-                {identification.name}
-              </CardTitle>
-              <Badge
-                variant="outline"
-                className={`${identification.type === "pest" ? "bg-orange-100 text-orange-800 border-orange-300" : "bg-red-100 text-red-800 border-red-300"}`}
-              >
-                {identification.type === "pest" ? (
-                  <Bug className="h-3 w-3 mr-1" />
-                ) : (
-                  <AlertCircle className="h-3 w-3 mr-1" />
-                )}
-                {identification.type.charAt(0).toUpperCase() +
-                  identification.type.slice(1)}
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-3">
-            <div className="flex items-center mb-3 bg-blue-50 dark:bg-blue-900/20 p-2 rounded-md">
-              <div className="w-full bg-blue-100 dark:bg-blue-800 rounded-full h-2.5">
-                <div
-                  className={`h-2.5 rounded-full ${identification.confidence > 90 ? "bg-green-500" : identification.confidence > 75 ? "bg-yellow-500" : "bg-red-500"}`}
-                  style={{ width: `${identification.confidence}%` }}
-                ></div>
-              </div>
-              <span className="ml-2 text-sm font-medium">
-                {identification.confidence}% confidence
-              </span>
-            </div>
-
-            <p className="text-gray-700 dark:text-gray-300">
-              {identification.description}
-            </p>
-
-            {/* Causes Section */}
-            {causes && causes.length > 0 && (
-              <div className="mt-4">
-                <h3 className="font-semibold text-red-700 dark:text-red-400 flex items-center mb-2">
-                  <AlertCircle className="h-4 w-4 mr-1" />
-                  Causes
-                </h3>
-                <ul className="list-disc pl-5 space-y-1">
-                  {causes.map((cause, index) => (
-                    <li
-                      key={index}
-                      className="text-gray-700 dark:text-gray-300"
-                    >
-                      {cause}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
         {/* Control Methods Section */}
-        <Card>
-          <CardHeader className="pb-2 border-b">
-            <div className="flex justify-between items-center">
-              <CardTitle className="flex items-center">
-                <Shield className="h-5 w-5 mr-2 text-blue-600 dark:text-blue-400" />
-                Control Methods
-              </CardTitle>
-              <Badge
-                variant="outline"
-                className="bg-yellow-50 text-yellow-800 border-yellow-300"
-              >
-                <AlertTriangle className="h-3 w-3 mr-1" />
-                Follow local regulations
-              </Badge>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-3 space-y-4">
-            {/* Chemical Controls */}
-            {controlMethods.chemical && controlMethods.chemical.length > 0 && (
-              <div className="bg-red-50 dark:bg-red-900/20 p-3 rounded-md border border-red-200 dark:border-red-800">
-                <h3 className="font-semibold text-red-700 dark:text-red-400 mb-2">
-                  Chemical Control
-                </h3>
-                {controlMethods.chemical.map((control, index) => (
+        <div className="space-y-3">
+          <h4 className="font-medium flex items-center">
+            <Shield className="mr-2 h-4 w-4 text-purple-500" />
+            Control Measures
+          </h4>
+
+          {/* Chemical Controls */}
+          {controlMethods.chemical && controlMethods.chemical.length > 0 && (
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-red-100 dark:border-red-900">
+              <h5 className="font-medium text-red-700 dark:text-red-400 mb-2 flex items-center">
+                <Droplets className="mr-2 h-4 w-4" />
+                Chemical Control
+              </h5>
+              <div className="text-gray-700 dark:text-gray-300 space-y-3">
+                {controlMethods.chemical.map((chemical, index) => (
                   <div
                     key={index}
-                    className="mb-3 last:mb-0 bg-white dark:bg-gray-800 p-3 rounded-md shadow-sm"
+                    className="border-b border-gray-100 dark:border-gray-700 pb-2 last:border-0 last:pb-0"
                   >
-                    <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
-                      {control.name}
-                    </h4>
-                    <div className="space-y-2">
-                      <div>
-                        <div className="font-bold text-gray-700 dark:text-gray-300">
-                          Active Ingredient:
-                        </div>
-                        <div className="text-gray-600 dark:text-gray-400">
-                          {control.activeIngredient}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="font-bold text-gray-700 dark:text-gray-300">
-                          Application Rate:
-                        </div>
-                        <div className="text-gray-600 dark:text-gray-400">
-                          {control.applicationRate}
-                        </div>
-                      </div>
-                      {control.brands && (
-                        <div>
-                          <div className="font-bold text-gray-700 dark:text-gray-300">
-                            Available Brands:
-                          </div>
-                          <div className="text-gray-600 dark:text-gray-400">
-                            {control.brands.join(", ")}
-                          </div>
+                    <div className="font-medium">{chemical.name}</div>
+                    <div className="text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Active Ingredient:
+                      </span>{" "}
+                      {chemical.activeIngredient}
+                    </div>
+                    <div className="text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Application Rate:
+                      </span>{" "}
+                      {chemical.applicationRate}
+                    </div>
+                    {chemical.methodPoints &&
+                      chemical.methodPoints.length > 0 && (
+                        <div className="text-sm mt-1">
+                          <span className="text-gray-600 dark:text-gray-400">
+                            Application Method:
+                          </span>
+                          <ul className="pl-5 list-disc mt-1 space-y-1">
+                            {chemical.methodPoints.map((point, i) => (
+                              <li key={i}>{point}</li>
+                            ))}
+                          </ul>
                         </div>
                       )}
-                      <div>
-                        <div className="font-bold text-gray-700 dark:text-gray-300">
-                          Method:
-                        </div>
-                        {control.methodPoints ? (
-                          <ul className="list-disc pl-5 space-y-1 text-gray-600 dark:text-gray-400">
-                            {control.methodPoints.map((point, idx) => (
-                              <li key={idx}>{point}</li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <div className="text-gray-600 dark:text-gray-400">
-                            {control.method}
-                          </div>
-                        )}
+                    {chemical.brands && chemical.brands.length > 0 && (
+                      <div className="text-sm mt-1">
+                        <span className="text-gray-600 dark:text-gray-400">
+                          Available Brands:
+                        </span>{" "}
+                        {chemical.brands.join(", ")}
                       </div>
-                      <div>
-                        <div className="font-bold text-gray-700 dark:text-gray-300">
+                    )}
+                    {chemical.safeDays && (
+                      <div className="text-sm mt-1">
+                        <span className="text-gray-600 dark:text-gray-400">
                           Safe Days:
-                        </div>
-                        <div className="text-gray-600 dark:text-gray-400">
-                          {control.safeDays}
-                        </div>
+                        </span>{" "}
+                        {chemical.safeDays} days before harvest
                       </div>
-                      <div className="bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded border border-yellow-200 dark:border-yellow-800">
-                        <div className="font-bold text-yellow-700 dark:text-yellow-400">
-                          Safety:
-                        </div>
-                        {control.safetyPoints ? (
-                          <ul className="list-disc pl-5 space-y-1 text-yellow-600 dark:text-yellow-500">
-                            {control.safetyPoints.map((point, idx) => (
-                              <li key={idx}>{point}</li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <div className="text-yellow-600 dark:text-yellow-500">
-                            {control.safety}
-                          </div>
-                        )}
-                      </div>
-                    </div>
+                    )}
                   </div>
                 ))}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Organic Controls */}
-            {controlMethods.organic && controlMethods.organic.length > 0 && (
-              <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-md border border-green-200 dark:border-green-800">
-                <h3 className="font-semibold text-green-700 dark:text-green-400 mb-2">
-                  Organic Control
-                </h3>
-                {controlMethods.organic.map((control, index) => (
+          {/* Organic Controls */}
+          {controlMethods.organic && controlMethods.organic.length > 0 && (
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-green-100 dark:border-green-900">
+              <h5 className="font-medium text-green-700 dark:text-green-400 mb-2 flex items-center">
+                <Sprout className="mr-2 h-4 w-4" />
+                Organic Control
+              </h5>
+              <div className="text-gray-700 dark:text-gray-300 space-y-3">
+                {controlMethods.organic.map((organic, index) => (
                   <div
                     key={index}
-                    className="mb-3 last:mb-0 bg-white dark:bg-gray-800 p-3 rounded-md shadow-sm"
+                    className="border-b border-gray-100 dark:border-gray-700 pb-2 last:border-0 last:pb-0"
                   >
-                    <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">
-                      {control.name}
-                    </h4>
-                    <div className="space-y-2">
-                      <div>
-                        <div className="font-bold text-gray-700 dark:text-gray-300">
-                          Active Ingredient:
-                        </div>
-                        <div className="text-gray-600 dark:text-gray-400">
-                          {control.activeIngredient}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="font-bold text-gray-700 dark:text-gray-300">
-                          Application Rate:
-                        </div>
-                        <div className="text-gray-600 dark:text-gray-400">
-                          {control.applicationRate}
-                        </div>
-                      </div>
-                      <div>
-                        <div className="font-bold text-gray-700 dark:text-gray-300">
-                          Method:
-                        </div>
-                        {control.methodPoints ? (
-                          <ul className="list-disc pl-5 space-y-1 text-gray-600 dark:text-gray-400">
-                            {control.methodPoints.map((point, idx) => (
-                              <li key={idx}>{point}</li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <div className="text-gray-600 dark:text-gray-400">
-                            {control.method}
-                          </div>
-                        )}
-                      </div>
-                      <div>
-                        <div className="font-bold text-gray-700 dark:text-gray-300">
-                          Safe Days:
-                        </div>
-                        <div className="text-gray-600 dark:text-gray-400">
-                          {control.safeDays}
-                        </div>
-                      </div>
-                      <div className="bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded border border-yellow-200 dark:border-yellow-800">
-                        <div className="font-bold text-yellow-700 dark:text-yellow-400">
-                          Safety:
-                        </div>
-                        {control.safetyPoints ? (
-                          <ul className="list-disc pl-5 space-y-1 text-yellow-600 dark:text-yellow-500">
-                            {control.safetyPoints.map((point, idx) => (
-                              <li key={idx}>{point}</li>
-                            ))}
-                          </ul>
-                        ) : (
-                          <div className="text-yellow-600 dark:text-yellow-500">
-                            {control.safety}
-                          </div>
-                        )}
-                      </div>
+                    <div className="font-medium">{organic.name}</div>
+                    <div className="text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Active Ingredient:
+                      </span>{" "}
+                      {organic.activeIngredient}
                     </div>
+                    <div className="text-sm">
+                      <span className="text-gray-600 dark:text-gray-400">
+                        Application Rate:
+                      </span>{" "}
+                      {organic.applicationRate}
+                    </div>
+                    {organic.methodPoints &&
+                      organic.methodPoints.length > 0 && (
+                        <div className="text-sm mt-1">
+                          <span className="text-gray-600 dark:text-gray-400">
+                            Application Method:
+                          </span>
+                          <ul className="pl-5 list-disc mt-1 space-y-1">
+                            {organic.methodPoints.map((point, i) => (
+                              <li key={i}>{point}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                   </div>
                 ))}
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Cultural Controls */}
-            {controlMethods.cultural && controlMethods.cultural.length > 0 && (
-              <div className="bg-blue-50 dark:bg-blue-900/20 p-3 rounded-md border border-blue-200 dark:border-blue-800">
-                <h3 className="font-semibold text-blue-700 dark:text-blue-400 mb-2">
-                  Cultural Control
-                </h3>
-                <ul className="list-disc pl-5 space-y-1">
-                  {controlMethods.cultural.map((practice, index) => (
-                    <li
-                      key={index}
-                      className="text-gray-700 dark:text-gray-300"
-                    >
-                      {practice}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+          {/* Cultural Practices */}
+          {controlMethods.cultural && controlMethods.cultural.length > 0 && (
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-amber-100 dark:border-amber-900">
+              <h5 className="font-medium text-amber-700 dark:text-amber-400 mb-2 flex items-center">
+                <CheckCircle2 className="mr-2 h-4 w-4" />
+                Cultural Practices
+              </h5>
+              <ul className="text-gray-700 dark:text-gray-300 pl-5 list-disc space-y-1">
+                {controlMethods.cultural.map((practice, index) => (
+                  <li key={index}>{practice}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
 
         {/* Affected Plants Section */}
         {affectedPlants && affectedPlants.length > 0 && (
-          <Card>
-            <CardHeader className="pb-2 border-b">
-              <CardTitle className="flex items-center">
-                <Sprout className="h-5 w-5 mr-2 text-orange-600 dark:text-orange-400" />
-                Affected Plants
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-3">
-              <div className="flex flex-wrap gap-2">
-                {affectedPlants.map((plant, index) => (
-                  <Badge
-                    key={index}
-                    variant="outline"
-                    className="bg-orange-50 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800 py-1.5"
-                  >
-                    {plant}
-                  </Badge>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <h4 className="font-medium mb-2 flex items-center">
+              <Leaf className="mr-2 h-4 w-4 text-green-500" />
+              Plants Affected
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              {affectedPlants.map((plant, index) => (
+                <Badge
+                  key={index}
+                  variant="outline"
+                  className="bg-green-50 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
+                >
+                  {plant}
+                </Badge>
+              ))}
+            </div>
+          </div>
         )}
       </div>
     );
   } catch (error) {
-    // Handle parsing errors
+    console.error("Error parsing identification data:", error);
     return (
-      <Card className="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
-        <CardHeader>
-          <CardTitle className="text-red-700 dark:text-red-400">
-            Error Parsing Report
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p>
-            There was an error displaying the identification report. Please try
-            again.
-          </p>
-        </CardContent>
-      </Card>
+      <div className="text-red-600">
+        <p>Error displaying identification results. Please try again.</p>
+      </div>
     );
   }
 };
