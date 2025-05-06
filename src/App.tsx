@@ -40,7 +40,9 @@ function App() {
               path="/"
               element={
                 <AuthGuard>
-                  <Home />
+                  <AppLayout>
+                    <Home />
+                  </AppLayout>
                 </AuthGuard>
               }
             />
@@ -48,7 +50,9 @@ function App() {
               path="/garden-identifier"
               element={
                 <AuthGuard>
-                  <GardenIdentifier />
+                  <AppLayout>
+                    <GardenIdentifier />
+                  </AppLayout>
                 </AuthGuard>
               }
             />
@@ -56,7 +60,9 @@ function App() {
               path="/plant-identifier"
               element={
                 <AuthGuard>
-                  <PlantIdentifier />
+                  <AppLayout>
+                    <PlantIdentifier />
+                  </AppLayout>
                 </AuthGuard>
               }
             />
@@ -64,7 +70,9 @@ function App() {
               path="/inventory"
               element={
                 <AuthGuard>
-                  <Inventory />
+                  <AppLayout>
+                    <Inventory />
+                  </AppLayout>
                 </AuthGuard>
               }
             />
@@ -72,7 +80,9 @@ function App() {
               path="/settings"
               element={
                 <AuthGuard>
-                  <Settings />
+                  <AppLayout>
+                    <Settings />
+                  </AppLayout>
                 </AuthGuard>
               }
             />
@@ -80,7 +90,9 @@ function App() {
               path="/market"
               element={
                 <AuthGuard>
-                  <Market />
+                  <AppLayout>
+                    <Market />
+                  </AppLayout>
                 </AuthGuard>
               }
             />

@@ -19,7 +19,16 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Calendar, Truck, History, BarChart3 } from "lucide-react";
+import {
+  Plus,
+  Calendar,
+  Truck,
+  History,
+  BarChart3,
+  Loader2,
+} from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { toast } from "@/components/ui/use-toast";
 
 export interface OutputItem {
   id: string;
@@ -70,11 +79,34 @@ const OutputDetails: React.FC<OutputDetailsProps> = ({
   // Initialize harvest history if it doesn't exist
   const harvestHistory = item.harvestHistory || [];
 
+  const [harvestDate, setHarvestDate] = useState(
+    new Date().toISOString().split("T")[0],
+  );
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Helper function to determine status based on quantity
+  const getStatusFromQuantity = (qty: number): string => {
+    if (qty === 0) return "Out of Stock";
+    if (qty < 10) return "Low Stock";
+    return "Ready for Sale";
+  };
+
   const handleAddHarvest = () => {
+    if (!quantity || Number(quantity) <= 0) {
+      toast({
+        title: "Invalid quantity",
+        description: "Please enter a valid quantity",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
     const newQuantity = item.quantity + Number(quantity);
     const newHarvestRecord: HarvestRecord = {
       id: Date.now().toString(),
-      date: new Date().toISOString().split("T")[0],
+      date: harvestDate,
       quantity: Number(quantity),
       quality,
       fieldOrLocation,
@@ -85,6 +117,7 @@ const OutputDetails: React.FC<OutputDetailsProps> = ({
     const updatedItem = {
       ...item,
       quantity: newQuantity,
+      status: getStatusFromQuantity(newQuantity),
       harvestDate: new Date().toISOString().split("T")[0],
       harvestHistory: updatedHistory,
       notes: itemNotes,
@@ -92,12 +125,21 @@ const OutputDetails: React.FC<OutputDetailsProps> = ({
       quality: harvestHistory.length === 0 ? quality : item.quality,
     };
 
-    onUpdate(updatedItem);
-    setIsAddingHarvest(false);
-    setQuantity("0");
-    setQuality("Good");
-    setFieldOrLocation("");
-    setNotes("");
+    // Use local state management instead of Supabase for now
+    setTimeout(() => {
+      toast({
+        title: "Harvest recorded",
+        description: `Added ${quantity} ${item.unit} of ${item.name}`,
+      });
+
+      onUpdate(updatedItem);
+      setIsAddingHarvest(false);
+      setQuantity("0");
+      setQuality("Good");
+      setFieldOrLocation("");
+      setNotes("");
+      setIsSubmitting(false);
+    }, 500);
   };
 
   // Format date
@@ -308,6 +350,16 @@ const OutputDetails: React.FC<OutputDetailsProps> = ({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-sm font-medium">
+                        Harvest Date
+                      </label>
+                      <Input
+                        type="date"
+                        value={harvestDate}
+                        onChange={(e) => setHarvestDate(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">
                         Quantity Harvested
                       </label>
                       <Input
@@ -358,7 +410,16 @@ const OutputDetails: React.FC<OutputDetailsProps> = ({
                     >
                       Cancel
                     </Button>
-                    <Button onClick={handleAddHarvest}>Record Harvest</Button>
+                    <Button onClick={handleAddHarvest} disabled={isSubmitting}>
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Recording...
+                        </>
+                      ) : (
+                        "Record Harvest"
+                      )}
+                    </Button>
                   </div>
                 </div>
               </CardContent>

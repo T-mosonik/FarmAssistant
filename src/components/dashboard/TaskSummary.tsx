@@ -5,7 +5,6 @@ import {
   AlertCircle,
   CheckCircle2,
   MoreVertical,
-  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -125,7 +124,7 @@ const TaskSummary = ({
         return (
           <Badge
             variant="outline"
-            className="bg-blue-100 text-blue-800 border-blue-300"
+            className="bg-blue-100 text-blue-800 border-blue-300 text-xs"
           >
             Pending
           </Badge>
@@ -134,7 +133,7 @@ const TaskSummary = ({
         return (
           <Badge
             variant="outline"
-            className="bg-yellow-100 text-yellow-800 border-yellow-300"
+            className="bg-yellow-100 text-yellow-800 border-yellow-300 text-xs"
           >
             In Progress
           </Badge>
@@ -143,15 +142,19 @@ const TaskSummary = ({
         return (
           <Badge
             variant="outline"
-            className="bg-green-100 text-green-800 border-green-300"
+            className="bg-green-100 text-green-800 border-green-300 text-xs"
           >
             Completed
           </Badge>
         );
       case "overdue":
-        return <Badge variant="destructive">Overdue</Badge>;
+        return (
+          <Badge variant="destructive" className="text-xs">
+            Overdue
+          </Badge>
+        );
       default:
-        return <Badge>Unknown</Badge>;
+        return <Badge className="text-xs">Unknown</Badge>;
     }
   };
 
@@ -159,13 +162,17 @@ const TaskSummary = ({
   const getStatusIcon = (status: Task["status"]) => {
     switch (status) {
       case "pending":
-        return <Clock className="h-4 w-4 text-blue-500" />;
+        return <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />;
       case "in-progress":
-        return <CalendarCheck className="h-4 w-4 text-yellow-500" />;
+        return (
+          <CalendarCheck className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-500" />
+        );
       case "completed":
-        return <CheckCircle2 className="h-4 w-4 text-green-500" />;
+        return (
+          <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
+        );
       case "overdue":
-        return <AlertCircle className="h-4 w-4 text-red-500" />;
+        return <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4 text-red-500" />;
       default:
         return null;
     }
@@ -176,50 +183,53 @@ const TaskSummary = ({
     <Card
       key={task.id}
       className={cn(
-        "mb-4 hover:shadow-md transition-shadow",
+        "mb-3 sm:mb-4 hover:shadow-md transition-shadow",
         task.status === "overdue" && "border-red-300",
         task.status === "completed" && "opacity-75",
       )}
     >
-      <CardHeader className="pb-2">
+      <CardHeader className="pb-1 sm:pb-2 p-2 sm:p-3 md:p-6">
         <div className="flex justify-between items-start">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             {getStatusIcon(task.status)}
-            <CardTitle className="text-lg">{task.title}</CardTitle>
+            <CardTitle className="text-sm sm:text-base md:text-lg truncate max-w-[180px] sm:max-w-none">
+              {task.title}
+            </CardTitle>
           </div>
           <Button
             variant="ghost"
             size="icon"
             onClick={() => onEditTask(task.id)}
+            className="h-7 w-7 sm:h-8 sm:w-8"
           >
-            <MoreVertical className="h-4 w-4" />
+            <MoreVertical className="h-3 w-3 sm:h-4 sm:w-4" />
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="p-3 sm:p-6">
-        <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+      <CardContent className="p-2 sm:p-3 md:p-6 pt-0">
+        <p className="text-xs sm:text-sm text-muted-foreground mb-2 sm:mb-3 line-clamp-2">
           {task.description}
         </p>
-        <div className="flex flex-wrap gap-2 mb-2">
+        <div className="flex flex-wrap gap-1 sm:gap-2 mb-1 sm:mb-2">
           {getPriorityBadge(task.priority)}
           {getStatusBadge(task.status)}
         </div>
-        <div className="flex items-center text-sm text-muted-foreground">
-          <Clock className="mr-1 h-3 w-3" />
+        <div className="flex items-center text-xs sm:text-sm text-muted-foreground">
+          <Clock className="mr-0.5 sm:mr-1 h-2.5 w-2.5 sm:h-3 sm:w-3" />
           <span>Due: {formatDate(task.dueDate)}</span>
         </div>
         {task.assignedTo && task.assignedTo.length > 0 && (
-          <div className="mt-2 text-sm text-muted-foreground">
+          <div className="mt-1 sm:mt-2 text-xs sm:text-sm text-muted-foreground">
             <span>Assigned to: {task.assignedTo.join(", ")}</span>
           </div>
         )}
       </CardContent>
-      <CardFooter className="pt-2 p-3 sm:p-6 flex flex-wrap sm:flex-nowrap gap-2 sm:gap-0 justify-between">
+      <CardFooter className="pt-1 sm:pt-2 p-2 sm:p-3 md:p-6 flex flex-col xs:flex-row gap-2 xs:gap-0 justify-between">
         <Button
           variant="outline"
           size="sm"
           onClick={() => onViewTask(task.id)}
-          className="w-full sm:w-auto"
+          className="w-full xs:w-auto text-xs h-7 sm:h-8"
         >
           View Details
         </Button>
@@ -229,7 +239,7 @@ const TaskSummary = ({
             size="sm"
             onClick={() => onCompleteTask(task.id)}
             className={cn(
-              "w-full sm:w-auto",
+              "w-full xs:w-auto text-xs h-7 sm:h-8",
               task.status === "overdue" ? "bg-red-500 hover:bg-red-600" : "",
             )}
           >
@@ -241,25 +251,30 @@ const TaskSummary = ({
   );
 
   return (
-    <div className="bg-background dark:bg-gray-800 rounded-xl border border-border p-4 w-full h-full flex flex-col">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2 sm:gap-0">
-        <h2 className="text-xl font-semibold">Task Summary</h2>
-        <div className="flex flex-wrap gap-2">
-          <Badge variant="destructive" className="flex items-center gap-1">
-            <AlertCircle className="h-3 w-3" />
+    <div className="bg-background dark:bg-gray-800 rounded-xl border border-border p-2 sm:p-3 md:p-4 w-full h-full flex flex-col">
+      <div className="flex flex-col xs:flex-row xs:items-center justify-between mb-2 sm:mb-4 gap-2 xs:gap-0">
+        <h2 className="text-base sm:text-lg md:text-xl font-semibold">
+          Task Summary
+        </h2>
+        <div className="flex flex-wrap gap-1 sm:gap-2">
+          <Badge
+            variant="destructive"
+            className="flex items-center gap-0.5 sm:gap-1 text-xs"
+          >
+            <AlertCircle className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
             Overdue: {overdueTasks.length}
           </Badge>
           <Badge
             variant="outline"
-            className="bg-blue-100 text-blue-800 border-blue-300 flex items-center gap-1"
+            className="bg-blue-100 text-blue-800 border-blue-300 flex items-center gap-0.5 sm:gap-1 text-xs"
           >
-            <Clock className="h-3 w-3" />
+            <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
             Pending: {pendingTasks.length}
           </Badge>
           <Button
             size="sm"
             variant="outline"
-            className="ml-0 sm:ml-2"
+            className="ml-0 xs:ml-1 sm:ml-2 h-7 sm:h-8 text-xs"
             onClick={() => {
               const newTask = {
                 title: "New Task",
@@ -267,25 +282,29 @@ const TaskSummary = ({
                 dueDate: new Date(Date.now() + 86400000),
                 priority: "medium" as const,
                 status: "pending" as const,
-                assignedTo: ["John Farmer"],
+                assignedTo: [], // Empty array to allow user to assign workers
               };
               onAddTask(newTask);
             }}
             asChild
           >
-            <Link to="/task-planner" className="flex items-center gap-1">
+            <Link
+              to="/task-planner"
+              className="flex items-center gap-0.5 sm:gap-1"
+            >
               + Add Task
             </Link>
           </Button>
         </div>
       </div>
 
-      <div className="overflow-y-auto flex-1 pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent max-h-[500px] md:max-h-[600px]">
+      <div className="overflow-y-auto flex-1 pr-1 sm:pr-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent max-h-[400px] sm:max-h-[500px] md:max-h-[600px]">
         {/* Overdue Tasks */}
         {overdueTasks.length > 0 && (
-          <div className="mb-4">
-            <h3 className="text-red-600 font-medium mb-2 flex items-center">
-              <AlertCircle className="h-4 w-4 mr-1" /> Overdue Tasks
+          <div className="mb-3 sm:mb-4">
+            <h3 className="text-red-600 font-medium mb-1 sm:mb-2 flex items-center text-xs sm:text-sm">
+              <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-0.5 sm:mr-1" />{" "}
+              Overdue Tasks
             </h3>
             {overdueTasks.map(renderTaskCard)}
           </div>
@@ -293,9 +312,10 @@ const TaskSummary = ({
 
         {/* Pending Tasks */}
         {pendingTasks.length > 0 && (
-          <div className="mb-4">
-            <h3 className="text-blue-600 font-medium mb-2 flex items-center">
-              <Clock className="h-4 w-4 mr-1" /> Pending Tasks
+          <div className="mb-3 sm:mb-4">
+            <h3 className="text-blue-600 font-medium mb-1 sm:mb-2 flex items-center text-xs sm:text-sm">
+              <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-0.5 sm:mr-1" /> Pending
+              Tasks
             </h3>
             {pendingTasks.map(renderTaskCard)}
           </div>
@@ -303,9 +323,10 @@ const TaskSummary = ({
 
         {/* In Progress Tasks */}
         {inProgressTasks.length > 0 && (
-          <div className="mb-4">
-            <h3 className="text-yellow-600 font-medium mb-2 flex items-center">
-              <CalendarCheck className="h-4 w-4 mr-1" /> In Progress
+          <div className="mb-3 sm:mb-4">
+            <h3 className="text-yellow-600 font-medium mb-1 sm:mb-2 flex items-center text-xs sm:text-sm">
+              <CalendarCheck className="h-3 w-3 sm:h-4 sm:w-4 mr-0.5 sm:mr-1" />{" "}
+              In Progress
             </h3>
             {inProgressTasks.map(renderTaskCard)}
           </div>
@@ -314,8 +335,9 @@ const TaskSummary = ({
         {/* Completed Tasks */}
         {completedTasks.length > 0 && (
           <div>
-            <h3 className="text-green-600 font-medium mb-2 flex items-center">
-              <CheckCircle2 className="h-4 w-4 mr-1" /> Completed
+            <h3 className="text-green-600 font-medium mb-1 sm:mb-2 flex items-center text-xs sm:text-sm">
+              <CheckCircle2 className="h-3 w-3 sm:h-4 sm:w-4 mr-0.5 sm:mr-1" />{" "}
+              Completed
             </h3>
             {completedTasks.map(renderTaskCard)}
           </div>
@@ -323,7 +345,7 @@ const TaskSummary = ({
 
         {/* No Tasks */}
         {tasks.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
+          <div className="text-center py-4 sm:py-8 text-muted-foreground text-xs sm:text-sm">
             <p>No tasks available. Create a new task to get started.</p>
           </div>
         )}

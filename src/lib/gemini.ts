@@ -8,7 +8,7 @@ export interface GeminiIdentificationResult {
   description: string;
   recommendations?: string[];
   causes?: string[];
-  plantsAffected?: string[];
+  plantsAffected: string[];
   controlMeasures?: {
     chemical?: {
       name: string;

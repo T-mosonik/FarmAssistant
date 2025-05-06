@@ -1,24 +1,27 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import NavigationDrawer from "@/components/navigation/NavigationDrawer";
+import ResponsiveNav from "@/components/navigation/ResponsiveNav";
 
 interface AppLayoutProps {
   children?: React.ReactNode;
 }
 
 const AppLayout = ({ children }: AppLayoutProps = {}) => {
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const location = useLocation();
+  const navRef = useRef<HTMLDivElement>(null);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
 
-  // Check if screen is mobile size
+  // Check if screen is mobile size but don't auto-open nav
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-      setDrawerOpen(window.innerWidth >= 768);
+      const isMobileView = window.innerWidth < 768;
+      setIsMobile(isMobileView);
+      // Don't auto-show on desktop anymore
     };
 
     // Initial check
@@ -31,60 +34,74 @@ const AppLayout = ({ children }: AppLayoutProps = {}) => {
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
-  // Close drawer on route change for mobile
+  // Close nav on route change for mobile
   useEffect(() => {
     if (isMobile) {
-      setDrawerOpen(false);
+      setNavOpen(false);
     }
   }, [location.pathname, isMobile]);
 
-  const toggleDrawer = () => {
-    setDrawerOpen(!drawerOpen);
+  // Handle clicks outside the navigation drawer
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      // If nav is open and click is outside nav and not on the menu button
+      if (
+        navOpen &&
+        navRef.current &&
+        !navRef.current.contains(event.target as Node) &&
+        menuButtonRef.current &&
+        !menuButtonRef.current.contains(event.target as Node)
+      ) {
+        setNavOpen(false);
+      }
+    };
+
+    // Add event listener for clicks on the document
+    document.addEventListener("mousedown", handleClickOutside);
+
+    // Cleanup
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [navOpen]);
+
+  const toggleNav = () => {
+    setNavOpen(!navOpen);
   };
 
   return (
-    <div className="flex h-screen w-screen overflow-hidden bg-background">
-      {/* Navigation Drawer - fixed position with proper mobile handling */}
-      <div
-        className={cn(
-          "z-50 transition-transform duration-300 ease-in-out h-full fixed",
-          !drawerOpen
-            ? "-translate-x-full"
-            : "translate-x-0 w-[280px] md:w-[300px]",
-        )}
-      >
-        <NavigationDrawer
-          isOpen={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
-        />
+    <div className="flex h-screen w-full overflow-hidden bg-background">
+      {/* Responsive Navigation */}
+      <div ref={navRef}>
+        <ResponsiveNav isOpen={navOpen} onClose={() => setNavOpen(false)} />
       </div>
 
-      {/* Overlay for when drawer is open */}
-      {drawerOpen && (
+      {/* Overlay for when nav is open on mobile */}
+      {navOpen && isMobile && (
         <div
           className="fixed inset-0 bg-black/30 z-40"
-          onClick={() => setDrawerOpen(false)}
+          onClick={() => setNavOpen(false)}
+          aria-hidden="true"
         />
       )}
 
-      {/* Main Content Area - always full width */}
-      <div className="flex flex-col flex-1 w-full overflow-hidden">
+      {/* Main Content Area */}
+      <div className="flex flex-col flex-1 overflow-hidden">
         {/* Top Header Bar */}
-        <header className="h-14 md:h-16 border-b border-border flex items-center px-3 md:px-4 bg-background">
+        <header className="h-16 border-b border-border flex items-center px-4 bg-background z-10">
           <Button
+            ref={menuButtonRef}
             variant="ghost"
             size="icon"
-            onClick={toggleDrawer}
-            className="mr-2 md:mr-4"
+            onClick={toggleNav}
+            className="mr-4"
             aria-label="Toggle navigation"
           >
             <Menu className="h-5 w-5" />
           </Button>
-          <h1 className="text-lg md:text-xl font-semibold">FarmAssistant</h1>
+          <h1 className="text-xl font-semibold truncate">FarmAssistant</h1>
         </header>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-auto p-3 md:p-6 w-full">
+        <main className="flex-1 overflow-auto p-4 md:p-6 w-full">
           {children || <Outlet />}
         </main>
       </div>

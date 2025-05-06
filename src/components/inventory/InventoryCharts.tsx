@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart3, TrendingUp, Package, Truck } from "lucide-react";
+import { BarChart3, TrendingUp, Package, Truck, Loader2 } from "lucide-react";
 import { InputItem } from "./InputDetails";
 import { OutputItem } from "./OutputDetails";
+import { supabase } from "@/lib/supabase";
 
 interface InventoryChartsProps {
   inputs: InputItem[];
@@ -10,9 +11,21 @@ interface InventoryChartsProps {
 }
 
 const InventoryCharts: React.FC<InventoryChartsProps> = ({
-  inputs,
-  outputs,
+  inputs: initialInputs,
+  outputs: initialOutputs,
 }) => {
+  const [inputs, setInputs] = useState<InputItem[]>(initialInputs);
+  const [outputs, setOutputs] = useState<OutputItem[]>(initialOutputs);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Just use the initial data from props instead of trying to fetch from Supabase
+    // This avoids the error when tables don't exist yet
+    setInputs(initialInputs);
+    setOutputs(initialOutputs);
+    setLoading(false);
+  }, [initialInputs, initialOutputs]);
   // This is a placeholder component for charts
   // In a real implementation, you would use a charting library like recharts, chart.js, or visx
 
@@ -66,6 +79,27 @@ const InventoryCharts: React.FC<InventoryChartsProps> = ({
   // Calculate max values for scaling the bars
   const maxInputTotal = Math.max(...inputTotals.map((item) => item.total), 1);
   const maxOutputTotal = Math.max(...outputTotals.map((item) => item.total), 1);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2">Loading inventory data...</span>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="p-4 border border-red-300 bg-red-50 text-red-800 rounded-md">
+        <p className="font-medium">Error loading inventory data</p>
+        <p className="text-sm">{error}</p>
+        <p className="text-sm mt-2">Showing fallback data instead.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

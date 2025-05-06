@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -19,7 +19,9 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Plus, Minus, Calendar, Package, History } from "lucide-react";
+import { Plus, Minus, Calendar, Package, History, Loader2 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
+import { toast } from "@/components/ui/use-toast";
 
 export interface InputItem {
   id: string;
@@ -73,34 +75,82 @@ const InputDetails: React.FC<InputDetailsProps> = ({
   // Initialize usage history if it doesn't exist
   const usageHistory = item.usageHistory || [];
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Helper function to determine status based on quantity
+  const getStatusFromQuantity = (qty: number): string => {
+    if (qty === 0) return "Out of Stock";
+    if (qty < 10) return "Low Stock";
+    return "In Stock";
+  };
+
   const handleAddStock = () => {
+    if (!quantity || Number(quantity) <= 0) {
+      toast({
+        title: "Invalid quantity",
+        description: "Please enter a valid quantity",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
     const newQuantity = item.quantity + Number(quantity);
     const updatedItem = {
       ...item,
       quantity: newQuantity,
+      status: getStatusFromQuantity(newQuantity),
       lastUpdated: new Date().toISOString().split("T")[0],
       supplier: supplier,
       purchasePrice: purchasePrice ? Number(purchasePrice) : undefined,
       notes: itemNotes,
     };
-    onUpdate(updatedItem);
-    setIsAddingStock(false);
-    setQuantity("0");
-    setSupplier("");
-    setPurchasePrice("");
+
+    // Use local state management instead of Supabase for now
+    setTimeout(() => {
+      toast({
+        title: "Stock added",
+        description: `Added ${quantity} ${item.unit} of ${item.name}`,
+      });
+
+      onUpdate(updatedItem);
+      setIsAddingStock(false);
+      setQuantity("0");
+      setSupplier("");
+      setPurchasePrice("");
+      setIsSubmitting(false);
+    }, 500);
   };
+
+  const [usageDate, setUsageDate] = useState(
+    new Date().toISOString().split("T")[0],
+  );
 
   const handleRemoveStock = () => {
     const qtyToRemove = Number(quantity);
     if (qtyToRemove > item.quantity) {
-      alert("Cannot remove more than available stock");
+      toast({
+        title: "Invalid quantity",
+        description: "Cannot remove more than available stock",
+        variant: "destructive",
+      });
       return;
     }
 
+    if (!purpose) {
+      toast({
+        title: "Missing information",
+        description: "Please select a purpose for this usage",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
     const newQuantity = item.quantity - qtyToRemove;
     const newUsageRecord: UsageRecord = {
       id: Date.now().toString(),
-      date: new Date().toISOString().split("T")[0],
+      date: usageDate,
       quantity: qtyToRemove,
       purpose,
       fieldOrCrop,
@@ -111,17 +161,27 @@ const InputDetails: React.FC<InputDetailsProps> = ({
     const updatedItem = {
       ...item,
       quantity: newQuantity,
+      status: getStatusFromQuantity(newQuantity),
       lastUpdated: new Date().toISOString().split("T")[0],
       usageHistory: updatedHistory,
       notes: itemNotes,
     };
 
-    onUpdate(updatedItem);
-    setIsRemovingStock(false);
-    setQuantity("0");
-    setPurpose("");
-    setFieldOrCrop("");
-    setNotes("");
+    // Use local state management instead of Supabase for now
+    setTimeout(() => {
+      toast({
+        title: "Usage recorded",
+        description: `Recorded usage of ${qtyToRemove} ${item.unit} of ${item.name}`,
+      });
+
+      onUpdate(updatedItem);
+      setIsRemovingStock(false);
+      setQuantity("0");
+      setPurpose("");
+      setFieldOrCrop("");
+      setNotes("");
+      setIsSubmitting(false);
+    }, 500);
   };
 
   // Format date
@@ -221,7 +281,7 @@ const InputDetails: React.FC<InputDetailsProps> = ({
                         Purchase Price:
                       </span>
                       <span className="font-medium">
-                        ${item.purchasePrice.toFixed(2)}
+                        KSH {item.purchasePrice.toFixed(2)}
                       </span>
                     </div>
                   )}
@@ -331,7 +391,16 @@ const InputDetails: React.FC<InputDetailsProps> = ({
                     >
                       Cancel
                     </Button>
-                    <Button onClick={handleAddStock}>Add Stock</Button>
+                    <Button onClick={handleAddStock} disabled={isSubmitting}>
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Adding...
+                        </>
+                      ) : (
+                        "Add Stock"
+                      )}
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -347,6 +416,14 @@ const InputDetails: React.FC<InputDetailsProps> = ({
               <CardContent>
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium">Usage Date</label>
+                      <Input
+                        type="date"
+                        value={usageDate}
+                        onChange={(e) => setUsageDate(e.target.value)}
+                      />
+                    </div>
                     <div className="space-y-2">
                       <label className="text-sm font-medium">
                         Quantity to Use
@@ -409,7 +486,16 @@ const InputDetails: React.FC<InputDetailsProps> = ({
                     >
                       Cancel
                     </Button>
-                    <Button onClick={handleRemoveStock}>Record Usage</Button>
+                    <Button onClick={handleRemoveStock} disabled={isSubmitting}>
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Recording...
+                        </>
+                      ) : (
+                        "Record Usage"
+                      )}
+                    </Button>
                   </div>
                 </div>
               </CardContent>

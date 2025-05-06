@@ -10,7 +10,7 @@ import {
   ArrowUpDown,
   Info,
 } from "lucide-react";
-import AppLayout from "@/components/layout/AppLayout";
+// AppLayout is already provided in App.tsx route
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -316,476 +316,469 @@ const Market = () => {
   const stats = calculateStats();
 
   return (
-    <AppLayout>
-      <div className="flex flex-col h-full bg-background">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Market Price Watch</h1>
-          <Button
-            variant="outline"
-            onClick={() => {
-              setIsLoading(true);
-              // Simulate refresh
-              setTimeout(() => setIsLoading(false), 1000);
-            }}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="mr-2 h-4 w-4" />
-            )}
-            Refresh
-          </Button>
-        </div>
+    <div className="flex flex-col h-full bg-background">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-2xl font-bold">Market Price Watch</h1>
+        <Button
+          variant="outline"
+          onClick={() => {
+            setIsLoading(true);
+            // Simulate refresh
+            setTimeout(() => setIsLoading(false), 1000);
+          }}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="mr-2 h-4 w-4" />
+          )}
+          Refresh
+        </Button>
+      </div>
 
-        <Tabs defaultValue="prices" className="w-full">
-          <TabsList className="mb-4 md:mb-6 w-full overflow-x-auto">
-            <TabsTrigger value="prices" className="flex items-center">
-              <BarChart3 className="mr-2 h-4 w-4" />
-              Price Listings
-            </TabsTrigger>
-            <TabsTrigger value="trends" className="flex items-center">
-              <TrendingUp className="mr-2 h-4 w-4" />
-              Market Trends
-            </TabsTrigger>
-          </TabsList>
+      <Tabs defaultValue="prices" className="w-full">
+        <TabsList className="mb-4 md:mb-6 w-full overflow-x-auto">
+          <TabsTrigger value="prices" className="flex items-center">
+            <BarChart3 className="mr-2 h-4 w-4" />
+            Price Listings
+          </TabsTrigger>
+          <TabsTrigger value="trends" className="flex items-center">
+            <TrendingUp className="mr-2 h-4 w-4" />
+            Market Trends
+          </TabsTrigger>
+        </TabsList>
 
-          {/* Price Listings Tab */}
-          <TabsContent value="prices" className="space-y-6">
-            {/* Market Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Commodities
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {stats.totalCommodities}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    Total tracked commodities
-                  </p>
-                </CardContent>
-              </Card>
+        {/* Price Listings Tab */}
+        <TabsContent value="prices" className="space-y-6">
+          {/* Market Stats Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4 md:mb-6">
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Commodities
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {stats.totalCommodities}
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Total tracked commodities
+                </p>
+              </CardContent>
+            </Card>
 
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">Markets</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stats.totalMarkets}</div>
-                  <p className="text-xs text-muted-foreground">
-                    Active market locations
-                  </p>
-                </CardContent>
-              </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">Markets</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalMarkets}</div>
+                <p className="text-xs text-muted-foreground">
+                  Active market locations
+                </p>
+              </CardContent>
+            </Card>
 
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Price Trends
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-2">
-                    <Badge className="bg-green-100 text-green-800 border-green-300">
-                      {stats.increasingPrices} ↑
-                    </Badge>
-                    <Badge className="bg-red-100 text-red-800 border-red-300">
-                      {stats.decreasingPrices} ↓
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Increasing vs decreasing
-                  </p>
-                </CardContent>
-              </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Price Trends
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2">
+                  <Badge className="bg-green-100 text-green-800 border-green-300">
+                    {stats.increasingPrices} ↑
+                  </Badge>
+                  <Badge className="bg-red-100 text-red-800 border-red-300">
+                    {stats.decreasingPrices} ↓
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Increasing vs decreasing
+                </p>
+              </CardContent>
+            </Card>
 
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    Last Updated
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
-                    <span>{stats.latestUpdate}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Data refresh frequency: daily
-                  </p>
-                </CardContent>
-              </Card>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Last Updated
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center">
+                  <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span>{stats.latestUpdate}</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Data refresh frequency: daily
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Filters */}
+          <div className="flex flex-col md:flex-row gap-3 md:gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search commodity or market..."
+                className="pl-10"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
 
-            {/* Filters */}
-            <div className="flex flex-col md:flex-row gap-3 md:gap-4">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search commodity or market..."
-                  className="pl-10"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-              </div>
+            <div className="flex flex-wrap gap-2 mt-3 md:mt-0">
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <Filter className="mr-2 h-4 w-4" />
+                  <SelectValue placeholder="Category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category === "all" ? "All Categories" : category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
 
-              <div className="flex flex-wrap gap-2 mt-3 md:mt-0">
-                <Select
-                  value={categoryFilter}
-                  onValueChange={setCategoryFilter}
-                >
-                  <SelectTrigger className="w-full md:w-[180px]">
-                    <Filter className="mr-2 h-4 w-4" />
-                    <SelectValue placeholder="Category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories.map((category) => (
-                      <SelectItem key={category} value={category}>
-                        {category === "all" ? "All Categories" : category}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select value={marketFilter} onValueChange={setMarketFilter}>
-                  <SelectTrigger className="w-full md:w-[180px]">
-                    <Filter className="mr-2 h-4 w-4" />
-                    <SelectValue placeholder="Market" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {markets.map((market) => (
-                      <SelectItem key={market} value={market}>
-                        {market === "all" ? "All Markets" : market}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              <Select value={marketFilter} onValueChange={setMarketFilter}>
+                <SelectTrigger className="w-full md:w-[180px]">
+                  <Filter className="mr-2 h-4 w-4" />
+                  <SelectValue placeholder="Market" />
+                </SelectTrigger>
+                <SelectContent>
+                  {markets.map((market) => (
+                    <SelectItem key={market} value={market}>
+                      {market === "all" ? "All Markets" : market}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
+          </div>
 
-            {/* Price Table */}
-            <div className="rounded-md border overflow-x-auto">
-              <table className="w-full min-w-[640px]">
-                <thead>
-                  <tr className="border-b bg-muted/50">
-                    <th className="py-3 px-4 text-left font-medium">
-                      <button
-                        className="flex items-center"
-                        onClick={() => requestSort("commodity")}
-                      >
-                        Commodity
-                        <ArrowUpDown className="ml-1 h-3 w-3" />
-                      </button>
-                    </th>
-                    <th className="py-3 px-4 text-left font-medium">
-                      <button
-                        className="flex items-center"
-                        onClick={() => requestSort("market")}
-                      >
-                        Market
-                        <ArrowUpDown className="ml-1 h-3 w-3" />
-                      </button>
-                    </th>
-                    <th className="py-3 px-4 text-left font-medium">
-                      <button
-                        className="flex items-center"
-                        onClick={() => requestSort("category")}
-                      >
-                        Category
-                        <ArrowUpDown className="ml-1 h-3 w-3" />
-                      </button>
-                    </th>
-                    <th className="py-3 px-4 text-left font-medium">
-                      <button
-                        className="flex items-center"
-                        onClick={() => requestSort("price")}
-                      >
-                        Price
-                        <ArrowUpDown className="ml-1 h-3 w-3" />
-                      </button>
-                    </th>
-                    <th className="py-3 px-4 text-left font-medium">
-                      <button
-                        className="flex items-center"
-                        onClick={() => requestSort("change")}
-                      >
-                        Change
-                        <ArrowUpDown className="ml-1 h-3 w-3" />
-                      </button>
-                    </th>
-                    <th className="py-3 px-4 text-left font-medium">
-                      <button
-                        className="flex items-center"
-                        onClick={() => requestSort("date")}
-                      >
-                        Date
-                        <ArrowUpDown className="ml-1 h-3 w-3" />
-                      </button>
-                    </th>
+          {/* Price Table */}
+          <div className="rounded-md border overflow-x-auto">
+            <table className="w-full min-w-[640px]">
+              <thead>
+                <tr className="border-b bg-muted/50">
+                  <th className="py-3 px-4 text-left font-medium">
+                    <button
+                      className="flex items-center"
+                      onClick={() => requestSort("commodity")}
+                    >
+                      Commodity
+                      <ArrowUpDown className="ml-1 h-3 w-3" />
+                    </button>
+                  </th>
+                  <th className="py-3 px-4 text-left font-medium">
+                    <button
+                      className="flex items-center"
+                      onClick={() => requestSort("market")}
+                    >
+                      Market
+                      <ArrowUpDown className="ml-1 h-3 w-3" />
+                    </button>
+                  </th>
+                  <th className="py-3 px-4 text-left font-medium">
+                    <button
+                      className="flex items-center"
+                      onClick={() => requestSort("category")}
+                    >
+                      Category
+                      <ArrowUpDown className="ml-1 h-3 w-3" />
+                    </button>
+                  </th>
+                  <th className="py-3 px-4 text-left font-medium">
+                    <button
+                      className="flex items-center"
+                      onClick={() => requestSort("price")}
+                    >
+                      Price
+                      <ArrowUpDown className="ml-1 h-3 w-3" />
+                    </button>
+                  </th>
+                  <th className="py-3 px-4 text-left font-medium">
+                    <button
+                      className="flex items-center"
+                      onClick={() => requestSort("change")}
+                    >
+                      Change
+                      <ArrowUpDown className="ml-1 h-3 w-3" />
+                    </button>
+                  </th>
+                  <th className="py-3 px-4 text-left font-medium">
+                    <button
+                      className="flex items-center"
+                      onClick={() => requestSort("date")}
+                    >
+                      Date
+                      <ArrowUpDown className="ml-1 h-3 w-3" />
+                    </button>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={6} className="py-8 text-center">
+                      <div className="flex justify-center items-center">
+                        <RefreshCw className="h-5 w-5 animate-spin mr-2" />
+                        Loading price data...
+                      </div>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {isLoading ? (
-                    <tr>
-                      <td colSpan={6} className="py-8 text-center">
-                        <div className="flex justify-center items-center">
-                          <RefreshCw className="h-5 w-5 animate-spin mr-2" />
-                          Loading price data...
-                        </div>
+                ) : filteredData.length > 0 ? (
+                  filteredData.map((item) => (
+                    <tr key={item.id} className="border-b hover:bg-muted/50">
+                      <td className="py-3 px-4 font-medium">
+                        {item.commodity}
                       </td>
-                    </tr>
-                  ) : filteredData.length > 0 ? (
-                    filteredData.map((item) => (
-                      <tr key={item.id} className="border-b hover:bg-muted/50">
-                        <td className="py-3 px-4 font-medium">
-                          {item.commodity}
-                        </td>
-                        <td className="py-3 px-4">{item.market}</td>
-                        <td className="py-3 px-4">{item.category}</td>
-                        <td className="py-3 px-4">
-                          {item.price.toFixed(2)} KES/{item.unit}
-                        </td>
-                        <td className="py-3 px-4">
-                          {getTrendBadge(item.trend, item.change)}
-                        </td>
-                        <td className="py-3 px-4">{formatDate(item.date)}</td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan={6}
-                        className="py-8 text-center text-muted-foreground"
-                      >
-                        No price data found matching your criteria
+                      <td className="py-3 px-4">{item.market}</td>
+                      <td className="py-3 px-4">{item.category}</td>
+                      <td className="py-3 px-4">
+                        {item.price.toFixed(2)} KSH/{item.unit}
                       </td>
+                      <td className="py-3 px-4">
+                        {getTrendBadge(item.trend, item.change)}
+                      </td>
+                      <td className="py-3 px-4">{formatDate(item.date)}</td>
                     </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                  ))
+                ) : (
+                  <tr>
+                    <td
+                      colSpan={6}
+                      className="py-8 text-center text-muted-foreground"
+                    >
+                      No price data found matching your criteria
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
 
-            <div className="text-xs text-muted-foreground flex items-center">
-              <Info className="h-3 w-3 mr-1" />
-              Data source: Kenya Agricultural and Livestock Research
-              Organization (KALRO)
-            </div>
-          </TabsContent>
+          <div className="text-xs text-muted-foreground flex items-center">
+            <Info className="h-3 w-3 mr-1" />
+            Data source: Kenya Agricultural and Livestock Research Organization
+            (KALRO)
+          </div>
+        </TabsContent>
 
-          {/* Market Trends Tab */}
-          <TabsContent value="trends" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Price Trends by Category */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">
-                    Price Trends by Category
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {categories
-                      .filter((category) => category !== "all")
-                      .map((category) => {
-                        const categoryItems = priceData.filter(
-                          (item) => item.category === category,
-                        );
-                        const increasingCount = categoryItems.filter(
-                          (item) => item.trend === "up",
-                        ).length;
-                        const decreasingCount = categoryItems.filter(
-                          (item) => item.trend === "down",
-                        ).length;
-                        const stableCount = categoryItems.filter(
-                          (item) => item.trend === "stable",
-                        ).length;
-                        const total = categoryItems.length;
-
-                        return (
-                          <div key={category}>
-                            <div className="flex justify-between items-center mb-1">
-                              <span className="font-medium">{category}</span>
-                              <div className="flex gap-2">
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Badge className="bg-green-100 text-green-800 border-green-300">
-                                        {increasingCount}
-                                      </Badge>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Increasing prices</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Badge className="bg-red-100 text-red-800 border-red-300">
-                                        {decreasingCount}
-                                      </Badge>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Decreasing prices</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-
-                                <TooltipProvider>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Badge className="bg-gray-100 text-gray-800 border-gray-300">
-                                        {stableCount}
-                                      </Badge>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                      <p>Stable prices</p>
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </TooltipProvider>
-                              </div>
-                            </div>
-
-                            <div className="w-full flex h-2 bg-gray-200 rounded-full overflow-hidden">
-                              <div
-                                className="bg-green-500 h-full"
-                                style={{
-                                  width: `${(increasingCount / total) * 100}%`,
-                                }}
-                              ></div>
-                              <div
-                                className="bg-red-500 h-full"
-                                style={{
-                                  width: `${(decreasingCount / total) * 100}%`,
-                                }}
-                              ></div>
-                              <div
-                                className="bg-gray-400 h-full"
-                                style={{
-                                  width: `${(stableCount / total) * 100}%`,
-                                }}
-                              ></div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Market Activity */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Market Activity</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {markets
-                      .filter((market) => market !== "all")
-                      .map((market) => {
-                        const marketItems = priceData.filter(
-                          (item) => item.market === market,
-                        );
-                        const commodityCount = new Set(
-                          marketItems.map((item) => item.commodity),
-                        ).size;
-                        const latestDate = new Date(
-                          Math.max(
-                            ...marketItems.map((item) =>
-                              new Date(item.date).getTime(),
-                            ),
-                          ),
-                        );
-
-                        // Calculate average price change
-                        const totalChange = marketItems.reduce(
-                          (sum, item) => sum + item.change,
-                          0,
-                        );
-                        const avgChange =
-                          totalChange / (marketItems.length || 1);
-
-                        return (
-                          <div key={market} className="border-b pb-3">
-                            <div className="flex justify-between items-center">
-                              <h3 className="font-medium">{market}</h3>
-                              {avgChange > 0 ? (
-                                <Badge className="bg-green-100 text-green-800 border-green-300 flex items-center">
-                                  <TrendingUp className="h-3 w-3 mr-1" />+
-                                  {avgChange.toFixed(2)}%
-                                </Badge>
-                              ) : avgChange < 0 ? (
-                                <Badge className="bg-red-100 text-red-800 border-red-300 flex items-center">
-                                  <TrendingDown className="h-3 w-3 mr-1" />
-                                  {avgChange.toFixed(2)}%
-                                </Badge>
-                              ) : (
-                                <Badge className="bg-gray-100 text-gray-800 border-gray-300">
-                                  Stable
-                                </Badge>
-                              )}
-                            </div>
-                            <div className="text-sm text-muted-foreground mt-1">
-                              {commodityCount} commodities tracked
-                            </div>
-                            <div className="text-sm text-muted-foreground flex items-center">
-                              <Calendar className="h-3 w-3 mr-1" />
-                              Last updated:{" "}
-                              {formatDate(latestDate.toISOString())}
-                            </div>
-                          </div>
-                        );
-                      })}
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Price Volatility */}
+        {/* Market Trends Tab */}
+        <TabsContent value="trends" className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Price Trends by Category */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg">Price Volatility</CardTitle>
+                <CardTitle className="text-lg">
+                  Price Trends by Category
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {priceData
-                    .filter((item) => Math.abs(item.change) > 5)
-                    .sort((a, b) => Math.abs(b.change) - Math.abs(a.change))
-                    .slice(0, 5)
-                    .map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex justify-between items-center border-b pb-2"
-                      >
-                        <div>
-                          <div className="font-medium">{item.commodity}</div>
-                          <div className="text-sm text-muted-foreground">
-                            {item.market} • {item.category}
+                  {categories
+                    .filter((category) => category !== "all")
+                    .map((category) => {
+                      const categoryItems = priceData.filter(
+                        (item) => item.category === category,
+                      );
+                      const increasingCount = categoryItems.filter(
+                        (item) => item.trend === "up",
+                      ).length;
+                      const decreasingCount = categoryItems.filter(
+                        (item) => item.trend === "down",
+                      ).length;
+                      const stableCount = categoryItems.filter(
+                        (item) => item.trend === "stable",
+                      ).length;
+                      const total = categoryItems.length;
+
+                      return (
+                        <div key={category}>
+                          <div className="flex justify-between items-center mb-1">
+                            <span className="font-medium">{category}</span>
+                            <div className="flex gap-2">
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Badge className="bg-green-100 text-green-800 border-green-300">
+                                      {increasingCount}
+                                    </Badge>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Increasing prices</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Badge className="bg-red-100 text-red-800 border-red-300">
+                                      {decreasingCount}
+                                    </Badge>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Decreasing prices</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Badge className="bg-gray-100 text-gray-800 border-gray-300">
+                                      {stableCount}
+                                    </Badge>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>Stable prices</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
+                          </div>
+
+                          <div className="w-full flex h-2 bg-gray-200 rounded-full overflow-hidden">
+                            <div
+                              className="bg-green-500 h-full"
+                              style={{
+                                width: `${(increasingCount / total) * 100}%`,
+                              }}
+                            ></div>
+                            <div
+                              className="bg-red-500 h-full"
+                              style={{
+                                width: `${(decreasingCount / total) * 100}%`,
+                              }}
+                            ></div>
+                            <div
+                              className="bg-gray-400 h-full"
+                              style={{
+                                width: `${(stableCount / total) * 100}%`,
+                              }}
+                            ></div>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <div className="font-medium">
-                            {item.price.toFixed(2)} KES/{item.unit}
-                          </div>
-                          <div>{getTrendBadge(item.trend, item.change)}</div>
-                        </div>
-                      </div>
-                    ))}
-                </div>
-                <div className="mt-4 text-sm text-muted-foreground">
-                  Showing commodities with price changes greater than 5%
+                      );
+                    })}
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-        </Tabs>
-      </div>
-    </AppLayout>
+
+            {/* Market Activity */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Market Activity</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {markets
+                    .filter((market) => market !== "all")
+                    .map((market) => {
+                      const marketItems = priceData.filter(
+                        (item) => item.market === market,
+                      );
+                      const commodityCount = new Set(
+                        marketItems.map((item) => item.commodity),
+                      ).size;
+                      const latestDate = new Date(
+                        Math.max(
+                          ...marketItems.map((item) =>
+                            new Date(item.date).getTime(),
+                          ),
+                        ),
+                      );
+
+                      // Calculate average price change
+                      const totalChange = marketItems.reduce(
+                        (sum, item) => sum + item.change,
+                        0,
+                      );
+                      const avgChange = totalChange / (marketItems.length || 1);
+
+                      return (
+                        <div key={market} className="border-b pb-3">
+                          <div className="flex justify-between items-center">
+                            <h3 className="font-medium">{market}</h3>
+                            {avgChange > 0 ? (
+                              <Badge className="bg-green-100 text-green-800 border-green-300 flex items-center">
+                                <TrendingUp className="h-3 w-3 mr-1" />+
+                                {avgChange.toFixed(2)}%
+                              </Badge>
+                            ) : avgChange < 0 ? (
+                              <Badge className="bg-red-100 text-red-800 border-red-300 flex items-center">
+                                <TrendingDown className="h-3 w-3 mr-1" />
+                                {avgChange.toFixed(2)}%
+                              </Badge>
+                            ) : (
+                              <Badge className="bg-gray-100 text-gray-800 border-gray-300">
+                                Stable
+                              </Badge>
+                            )}
+                          </div>
+                          <div className="text-sm text-muted-foreground mt-1">
+                            {commodityCount} commodities tracked
+                          </div>
+                          <div className="text-sm text-muted-foreground flex items-center">
+                            <Calendar className="h-3 w-3 mr-1" />
+                            Last updated: {formatDate(latestDate.toISOString())}
+                          </div>
+                        </div>
+                      );
+                    })}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Price Volatility */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Price Volatility</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {priceData
+                  .filter((item) => Math.abs(item.change) > 5)
+                  .sort((a, b) => Math.abs(b.change) - Math.abs(a.change))
+                  .slice(0, 5)
+                  .map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex justify-between items-center border-b pb-2"
+                    >
+                      <div>
+                        <div className="font-medium">{item.commodity}</div>
+                        <div className="text-sm text-muted-foreground">
+                          {item.market} • {item.category}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="font-medium">
+                          {item.price.toFixed(2)} KSH/{item.unit}
+                        </div>
+                        <div>{getTrendBadge(item.trend, item.change)}</div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+              <div className="mt-4 text-sm text-muted-foreground">
+                Showing commodities with price changes greater than 5%
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 
