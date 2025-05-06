@@ -141,6 +141,7 @@ Keep your response concise and focused on the most important information. Format
         type: "plant",
         description: responseText,
         recommendations: ["Continue regular plant care and monitoring"],
+        plantsAffected: []
       };
     }
 
@@ -841,6 +842,19 @@ Keep your response concise and focused on the most important information. Format
       controlMeasures.cultural = defaultCultural;
     }
 
+    // Extract plants affected
+    const plantsAffectedSection = responseText.match(
+      /Plants Affected:[\s\S]*?(?=$)/i
+    );
+    let plantsAffected: string[] = [];
+    if (plantsAffectedSection) {
+      plantsAffected = plantsAffectedSection[0]
+        .replace(/Plants Affected:\s*/i, "")
+        .split(/\n-|\n\d\.|\s*,\s*/) // Split by bullet points, numbered lists, or commas
+        .map((item) => item.trim())
+        .filter((item) => item.length > 0);
+    }
+
     // Create the result object
     const result: GeminiIdentificationResult = {
       name,
@@ -868,6 +882,7 @@ Keep your response concise and focused on the most important information. Format
         "Ensure the image is well-lit and focused",
         "Check your internet connection",
       ],
+      plantsAffected: []
     };
   }
 };
