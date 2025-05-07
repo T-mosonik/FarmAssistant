@@ -106,7 +106,14 @@ function App() {
                 </AuthGuard>
               }
             />
-            {/* Removed identification-results route as results are now shown inline */}
+            <Route
+              path="/identification-results"
+              element={
+                <AuthGuard>
+                  <IdentificationResults />
+                </AuthGuard>
+              }
+            />
             {/* Add tempobook route for Tempo platform */}
             {import.meta.env.VITE_TEMPO === "true" && (
               <Route path="/tempobook/*" />

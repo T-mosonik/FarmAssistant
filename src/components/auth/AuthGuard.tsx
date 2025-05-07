@@ -20,11 +20,6 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   }
 
   if (!isAuthenticated) {
-    // For development, bypass authentication
-    if (process.env.NODE_ENV === "development") {
-      return <>{children}</>;
-    }
-
     // Redirect to login page but save the location they tried to access
     return <Navigate to="/login" state={{ from: location }} replace />;
   }

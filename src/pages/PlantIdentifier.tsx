@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   processImageWithGemini,
   getMockIdentificationResult,
@@ -67,6 +68,8 @@ const PlantIdentifier = () => {
   };
 
   // Process the image with AI
+  const navigate = useNavigate();
+
   const handleProcessImage = async () => {
     if (!selectedImage || isProcessing) return;
 
@@ -240,8 +243,6 @@ const PlantIdentifier = () => {
         responseContent = JSON.stringify(jsonResponse, null, 2);
       }
 
-      setIdentificationResult(responseContent);
-
       // Add to history if successful identification
       if (!responseContent.includes("error")) {
         const historyItem: IdentificationHistory = {
@@ -259,6 +260,17 @@ const PlantIdentifier = () => {
           "identificationHistory",
           JSON.stringify([historyItem, ...savedHistory].slice(0, 20)),
         );
+
+        // Navigate to the results page with the data
+        navigate("/identification-results", {
+          state: {
+            identificationData: responseContent,
+            imageUrl: selectedImage,
+          },
+        });
+      } else {
+        // For errors, show inline
+        setIdentificationResult(responseContent);
       }
     } catch (error) {
       // Handle error
