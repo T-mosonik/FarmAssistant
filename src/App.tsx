@@ -9,6 +9,7 @@ import AppLayout from "./components/layout/AppLayout";
 
 // Lazy load pages for better performance
 const Login = lazy(() => import("./pages/Login"));
+const Register = lazy(() => import("./pages/Register"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const AiChatNew = lazy(() => import("./pages/AiChatNew"));
 const PlantIdentifier = lazy(() => import("./pages/PlantIdentifier"));
@@ -35,6 +36,7 @@ function App() {
         <>
           <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route
               path="/"
