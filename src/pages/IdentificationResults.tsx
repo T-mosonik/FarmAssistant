@@ -65,7 +65,7 @@ const IdentificationResults = () => {
           <h1 className="text-2xl font-bold">Identification Results</h1>
         </div>
 
-        <div className="max-w-4xl mx-auto w-full">
+        <div className="w-[95%] mx-auto">
           {/* Header with pest name and confidence */}
           <div className="bg-black dark:bg-gray-800 p-6 rounded-t-lg border border-gray-700">
             <div className="flex justify-between items-center mb-2">
@@ -108,7 +108,7 @@ const IdentificationResults = () => {
           </div>
 
           {/* Main content */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-black dark:bg-gray-800 p-6 rounded-b-lg border-x border-b border-gray-700">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 bg-black dark:bg-gray-800 p-6 rounded-b-lg border-x border-b border-gray-700">
             <div className="md:col-span-1">
               {state.imageUrl && (
                 <div className="bg-gray-900 dark:bg-gray-900 p-4 rounded-lg border border-gray-700">
@@ -131,7 +131,7 @@ const IdentificationResults = () => {
               )}
             </div>
 
-            <div className="md:col-span-2">
+            <div className="md:col-span-3">
               <div className="bg-gray-900 dark:bg-gray-900 p-6 rounded-lg border border-gray-700">
                 <IdentificationReport jsonData={state.identificationData} />
               </div>

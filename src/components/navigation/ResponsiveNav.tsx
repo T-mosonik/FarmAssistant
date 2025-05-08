@@ -168,19 +168,16 @@ const ResponsiveNav = ({
           <Button
             variant="outline"
             className="w-full justify-start"
-            onClick={() => {
+            onClick={async () => {
               try {
-                const { useAuth } = require("@/contexts/AuthContext");
-                const { signOut } = useAuth();
-                signOut().then(() => {
-                  window.location.href = "/login";
-                });
+                // Import supabase directly to avoid issues with hooks in event handlers
+                const { supabase } = await import("@/lib/supabase");
+                await supabase.auth.signOut();
+                window.location.href = "/login";
               } catch (error) {
-                console.log("Auth context not available, using direct method");
-                const { supabase } = require("@/lib/supabase");
-                supabase.auth.signOut().then(() => {
-                  window.location.href = "/login";
-                });
+                console.error("Sign out error:", error);
+                // Still try to redirect even if there's an error
+                window.location.href = "/login";
               }
             }}
           >
