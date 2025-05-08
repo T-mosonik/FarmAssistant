@@ -1,6 +1,14 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Camera, Image, Search, Calendar, Send, Loader2 } from "lucide-react";
+import {
+  Camera,
+  Image,
+  Search,
+  Calendar,
+  Send,
+  Loader2,
+  Info,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +18,13 @@ import {
   GeminiIdentificationResult,
 } from "@/lib/gemini";
 import IdentificationReport from "@/components/ai-chat/IdentificationReport";
+
+interface Message {
+  id: string;
+  type: "user" | "assistant";
+  content: string;
+  timestamp: Date;
+}
 
 interface PestRecord {
   id: string;
@@ -51,6 +66,208 @@ const GardenIdentifier = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [locationFilter, setLocationFilter] = useState("All Locations");
+
+  // Chat state
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      id: "welcome",
+      type: "assistant",
+      content:
+        "Welcome to the FarmAssistant AI Chat! I'm here to help with your farming and gardening questions. How can I assist you today?",
+      timestamp: new Date(),
+    },
+  ]);
+  const [inputValue, setInputValue] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to bottom of messages
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  // Check if text is related to farming/gardening
+  const isAgricultureRelated = (text: string): boolean => {
+    const agricultureKeywords = [
+      "farm",
+      "crop",
+      "plant",
+      "soil",
+      "seed",
+      "harvest",
+      "fertilizer",
+      "pesticide",
+      "irrigation",
+      "garden",
+      "grow",
+      "cultivate",
+      "agriculture",
+      "organic",
+      "compost",
+      "weed",
+      "pest",
+      "disease",
+      "fruit",
+      "vegetable",
+      "flower",
+      "tree",
+      "shrub",
+      "greenhouse",
+      "hydroponics",
+      "livestock",
+      "cattle",
+      "poultry",
+      "dairy",
+      "field",
+      "yield",
+      "rotation",
+      "season",
+      "climate",
+      "weather",
+      "drought",
+      "flood",
+      "nutrient",
+      "mulch",
+      "prune",
+    ];
+
+    const lowerText = text.toLowerCase();
+    return agricultureKeywords.some((keyword) => lowerText.includes(keyword));
+  };
+
+  // Clean response text
+  const cleanResponseText = (text: string): string => {
+    // Remove asterisks
+    let cleaned = text.replace(/\*/g, "");
+    // Remove any markdown-style headers
+    cleaned = cleaned.replace(/^#+\s+.*$/gm, "");
+    // Remove excessive newlines
+    cleaned = cleaned.replace(/\n{3,}/g, "\n\n");
+    // Remove any "disclaimer" or "note" paragraphs
+    cleaned = cleaned.replace(/\n(Note:|Disclaimer:).*$/gs, "");
+    return cleaned.trim();
+  };
+
+  // Send message
+  const handleSendMessage = async () => {
+    if (!inputValue || isProcessing) return;
+
+    const newMessage: Message = {
+      id: Date.now().toString(),
+      type: "user",
+      content: inputValue,
+      timestamp: new Date(),
+    };
+
+    setMessages((prev) => [...prev, newMessage]);
+    setInputValue("");
+    setIsProcessing(true);
+
+    try {
+      // Check if the query is agriculture-related
+      if (!isAgricultureRelated(inputValue)) {
+        const errorMessage: Message = {
+          id: Date.now().toString(),
+          type: "assistant",
+          content:
+            "Your request is not related to farming or agriculture. I'm designed to help with agricultural topics only.",
+          timestamp: new Date(),
+        };
+        setMessages((prev) => [...prev, errorMessage]);
+      } else {
+        // Process with Gemini API
+        try {
+          const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+          const userCountry = userCountry;
+
+          const response = await fetch(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                contents: [
+                  {
+                    parts: [
+                      {
+                        text: `You are an agricultural assistant for a farming app called FarmAssistant. First, determine if the user's question is related to farming, agriculture, gardening, or any related agricultural topics. If it is NOT related to agriculture, respond with EXACTLY: "Your request is not related to farming or agriculture. I'm designed to help with agricultural topics only." and nothing else.
+
+If the question IS related to agriculture, answer it in a helpful, accurate, and detailed way. Provide specific, actionable advice when possible. The user is located in ${userCountry}, so tailor your advice to that region's climate, growing conditions, and available resources. Format your response in a professional, concise manner without excessive paragraphs. Avoid using asterisks for emphasis. If you don't know the answer, suggest resources or alternative approaches. Here is the user's question: ${inputValue}`,
+                      },
+                    ],
+                  },
+                ],
+                generationConfig: {
+                  temperature: 0.5,
+                  topK: 40,
+                  topP: 0.95,
+                  maxOutputTokens: 800,
+                },
+              }),
+            },
+          );
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(
+              `Gemini API error: ${errorData.error?.message || response.statusText}`,
+            );
+          }
+
+          const data = await response.json();
+          let responseContent = data.candidates[0].content.parts[0].text;
+
+          // Clean the response text
+          responseContent = cleanResponseText(responseContent);
+
+          const responseMessage: Message = {
+            id: Date.now().toString(),
+            type: "assistant",
+            content: responseContent,
+            timestamp: new Date(),
+          };
+
+          setMessages((prev) => [...prev, responseMessage]);
+        } catch (error) {
+          console.error("Error calling Gemini API:", error);
+
+          // Fallback to agricultural responses from the library
+          const { findAgricultureResponse } = await import(
+            "@/lib/agricultural-responses"
+          );
+          const response =
+            findAgricultureResponse(inputValue) ||
+            "I'm sorry, I couldn't find specific information about that agricultural topic. Could you try rephrasing your question?";
+
+          const responseMessage: Message = {
+            id: Date.now().toString(),
+            type: "assistant",
+            content: response,
+            timestamp: new Date(),
+          };
+
+          setMessages((prev) => [...prev, responseMessage]);
+        }
+      }
+    } catch (error) {
+      // Handle error
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        type: "assistant",
+        content: `Sorry, I encountered an error processing your request: ${error instanceof Error ? error.message : "Unknown error"}. Please try again.`,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   // Get unique locations for filter dropdown
   const uniqueLocations = [
@@ -507,14 +724,54 @@ const GardenIdentifier = () => {
                   </p>
                 </div>
               </div>
-              <div className="flex gap-2 mt-auto">
-                <Input
-                  placeholder="Ask about farming, gardening, or pest control..."
-                  className="flex-1"
-                />
-                <Button size="icon">
-                  <Send className="h-4 w-4" />
-                </Button>
+              <div className="flex flex-col gap-4 mt-auto">
+                <div className="flex-1 overflow-y-auto max-h-[400px] space-y-4">
+                  {messages.map((message, index) => (
+                    <div
+                      key={index}
+                      className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
+                    >
+                      <div
+                        className={`max-w-[80%] rounded-lg p-3 ${message.type === "user" ? "bg-primary text-primary-foreground" : "bg-muted"}`}
+                      >
+                        <p className="whitespace-pre-wrap">{message.content}</p>
+                        <p className="text-xs opacity-70 mt-1">
+                          {message.timestamp.toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  <div ref={messagesEndRef} />
+                </div>
+                <div className="flex gap-2">
+                  <Input
+                    value={inputValue}
+                    onChange={(e) => setInputValue(e.target.value)}
+                    placeholder="Ask about farming, gardening, or pest control..."
+                    className="flex-1"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }}
+                    disabled={isProcessing}
+                  />
+                  <Button
+                    size="icon"
+                    onClick={handleSendMessage}
+                    disabled={!inputValue || isProcessing}
+                  >
+                    {isProcessing ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>
