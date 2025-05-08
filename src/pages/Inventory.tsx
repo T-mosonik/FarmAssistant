@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Package, Truck, BarChart3, Plus } from "lucide-react";
+import { Package, Truck, BarChart3, Plus, Trash2 } from "lucide-react";
 import InputDetails, { InputItem } from "@/components/inventory/InputDetails";
 import OutputDetails, {
   OutputItem,
@@ -202,6 +202,16 @@ const Inventory = () => {
         output.id === updatedOutput.id ? updatedOutput : output,
       ),
     );
+  };
+
+  // Handle input deletion
+  const handleInputDelete = (inputId: string) => {
+    setInputs(inputs.filter((input) => input.id !== inputId));
+  };
+
+  // Handle output deletion
+  const handleOutputDelete = (outputId: string) => {
+    setOutputs(outputs.filter((output) => output.id !== outputId));
   };
 
   // Handle add new input
@@ -617,9 +627,20 @@ const Inventory = () => {
             {inputs.map((input) => (
               <div
                 key={input.id}
-                className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer relative"
                 onClick={() => handleInputSelect(input)}
               >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-2 right-2 h-6 w-6"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleInputDelete(input.id);
+                  }}
+                >
+                  <Trash2 className="h-3 w-3 text-red-500" />
+                </Button>
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="font-medium">{input.name}</h3>
                   <div
@@ -661,9 +682,20 @@ const Inventory = () => {
             {outputs.map((output) => (
               <div
                 key={output.id}
-                className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer relative"
                 onClick={() => handleOutputSelect(output)}
               >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-2 right-2 h-6 w-6"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleOutputDelete(output.id);
+                  }}
+                >
+                  <Trash2 className="h-3 w-3 text-red-500" />
+                </Button>
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="font-medium">{output.name}</h3>
                   <div

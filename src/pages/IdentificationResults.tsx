@@ -20,13 +20,13 @@ const IdentificationResults = () => {
   // If no data was passed, redirect back to the identifier
   if (!state?.identificationData) {
     React.useEffect(() => {
-      navigate("/garden-identifier");
+      navigate("/plant-identifier");
     }, [navigate]);
     return null;
   }
 
   const handleBack = () => {
-    navigate("/garden-identifier");
+    navigate("/plant-identifier");
   };
 
   // Parse the identification data to display in the header

@@ -161,8 +161,8 @@ const NavigationDrawer = ({
           onClick={() => {
             try {
               const { useAuth } = require("@/contexts/AuthContext");
-              const { logout } = useAuth();
-              logout().then(() => {
+              const { signOut } = useAuth();
+              signOut().then(() => {
                 window.location.href = "/login";
               });
             } catch (error) {

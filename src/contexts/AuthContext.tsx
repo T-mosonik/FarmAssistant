@@ -26,9 +26,8 @@ type AuthContextType = {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+// Named function declaration for better Fast Refresh support
+export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -72,12 +71,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       });
 
       if (error) {
+        console.error("Auth error:", error);
         return { success: false, error: error.message };
       }
 
       return { success: true };
     } catch (error: any) {
-      return { success: false, error: error.message };
+      console.error("Sign in error:", error);
+      return {
+        success: false,
+        error: error.message || "An error occurred during sign in",
+      };
     }
   };
 
@@ -116,13 +120,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
+}
 
-// Export the useAuth hook
-export const useAuth = () => {
+// Named function for the hook for better Fast Refresh support
+export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-};
+}
