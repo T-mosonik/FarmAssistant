@@ -62,6 +62,15 @@ const GardenIdentifier = () => {
     },
   ]);
 
+  // Form state for tracking new pests/diseases
+  const [trackingForm, setTrackingForm] = useState({
+    date: "",
+    name: "",
+    location: "",
+    affectedPlants: "",
+    treatmentPlan: "",
+  });
+
   // History tab filtering state
   const [searchQuery, setSearchQuery] = useState("");
   const [dateFilter, setDateFilter] = useState("");
@@ -168,79 +177,80 @@ const GardenIdentifier = () => {
     setIsProcessing(true);
 
     try {
-      // Check if the query is agriculture-related
-      if (!isAgricultureRelated(inputValue)) {
-        const errorMessage: Message = {
+      // Process with Gemini API - let the AI check if it's agriculture-related
+      try {
+        const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+        const currentUserCountry = userCountry;
+
+        const response = await fetch(
+          `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              contents: [
+                {
+                  parts: [
+                    {
+                      text: `You are an agricultural assistant for a farming app called FarmAssistant. First, determine if the user's question is related to farming, agriculture, gardening, or any related agricultural topics. If it is NOT related to agriculture, respond with EXACTLY: "Your request is not related to farming or agriculture. I'm designed to help with agricultural topics only." and nothing else.
+
+If the question IS related to agriculture, answer it in a helpful, accurate, and detailed way. Provide specific, actionable advice when possible. The user is located in ${currentUserCountry}, so tailor your advice to that region's climate, growing conditions, and available resources. Format your response in a professional, concise manner without excessive paragraphs. Avoid using asterisks for emphasis. If you don't know the answer, suggest resources or alternative approaches. Here is the user's question: ${inputValue}`,
+                    },
+                  ],
+                },
+              ],
+              generationConfig: {
+                temperature: 0.5,
+                topK: 40,
+                topP: 0.95,
+                maxOutputTokens: 800,
+              },
+            }),
+          },
+        );
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(
+            `Gemini API error: ${errorData.error?.message || response.statusText}`,
+          );
+        }
+
+        const data = await response.json();
+        let responseContent = data.candidates[0].content.parts[0].text;
+
+        // Clean the response text
+        responseContent = cleanResponseText(responseContent);
+
+        const responseMessage: Message = {
           id: Date.now().toString(),
           type: "assistant",
-          content:
-            "Your request is not related to farming or agriculture. I'm designed to help with agricultural topics only.",
+          content: responseContent,
           timestamp: new Date(),
         };
-        setMessages((prev) => [...prev, errorMessage]);
-      } else {
-        // Process with Gemini API
-        try {
-          const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-          const userCountry = userCountry;
 
-          const response = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent?key=${apiKey}`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                contents: [
-                  {
-                    parts: [
-                      {
-                        text: `You are an agricultural assistant for a farming app called FarmAssistant. First, determine if the user's question is related to farming, agriculture, gardening, or any related agricultural topics. If it is NOT related to agriculture, respond with EXACTLY: "Your request is not related to farming or agriculture. I'm designed to help with agricultural topics only." and nothing else.
+        setMessages((prev) => [...prev, responseMessage]);
+      } catch (error) {
+        console.error("Error calling Gemini API:", error);
 
-If the question IS related to agriculture, answer it in a helpful, accurate, and detailed way. Provide specific, actionable advice when possible. The user is located in ${userCountry}, so tailor your advice to that region's climate, growing conditions, and available resources. Format your response in a professional, concise manner without excessive paragraphs. Avoid using asterisks for emphasis. If you don't know the answer, suggest resources or alternative approaches. Here is the user's question: ${inputValue}`,
-                      },
-                    ],
-                  },
-                ],
-                generationConfig: {
-                  temperature: 0.5,
-                  topK: 40,
-                  topP: 0.95,
-                  maxOutputTokens: 800,
-                },
-              }),
-            },
-          );
+        // Fallback to agricultural responses from the library
+        const { findAgricultureResponse } = await import(
+          "@/lib/agricultural-responses"
+        );
 
-          if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(
-              `Gemini API error: ${errorData.error?.message || response.statusText}`,
-            );
-          }
-
-          const data = await response.json();
-          let responseContent = data.candidates[0].content.parts[0].text;
-
-          // Clean the response text
-          responseContent = cleanResponseText(responseContent);
-
-          const responseMessage: Message = {
+        // Check if the query is agriculture-related as a fallback
+        if (!isAgricultureRelated(inputValue)) {
+          const errorMessage: Message = {
             id: Date.now().toString(),
             type: "assistant",
-            content: responseContent,
+            content:
+              "Your request is not related to farming or agriculture. I'm designed to help with agricultural topics only.",
             timestamp: new Date(),
           };
-
-          setMessages((prev) => [...prev, responseMessage]);
-        } catch (error) {
-          console.error("Error calling Gemini API:", error);
-
-          // Fallback to agricultural responses from the library
-          const { findAgricultureResponse } = await import(
-            "@/lib/agricultural-responses"
-          );
+          setMessages((prev) => [...prev, errorMessage]);
+        } else {
           const response =
             findAgricultureResponse(inputValue) ||
             "I'm sorry, I couldn't find specific information about that agricultural topic. Could you try rephrasing your question?";
@@ -408,7 +418,7 @@ If the question IS related to agriculture, answer it in a helpful, accurate, and
         <TabsContent value="identify" className="flex-1 flex flex-col">
           <Card className="flex-1">
             <CardContent className="flex items-center justify-center h-full p-6">
-              <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-md p-12 flex flex-col items-center justify-center w-full max-w-md mx-auto">
+              <div className="border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-md p-12 flex flex-col items-center justify-center w-full max-w-[80%] min-w-[60rem] mx-auto">
                 {selectedImage ? (
                   <div className="space-y-4 w-full">
                     <div className="relative w-full">
@@ -526,10 +536,53 @@ If the question IS related to agriculture, answer it in a helpful, accurate, and
         <TabsContent value="track" className="flex-1">
           <Card className="flex-1">
             <CardContent className="p-6">
-              <form className="space-y-4">
+              <form
+                className="space-y-4"
+                onSubmit={(e) => {
+                  e.preventDefault();
+
+                  // Create new record
+                  const newRecord: PestRecord = {
+                    id: Date.now().toString(),
+                    name: trackingForm.name,
+                    date:
+                      trackingForm.date ||
+                      new Date().toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      }),
+                    location: trackingForm.location,
+                    affectedPlants: trackingForm.affectedPlants,
+                    treatmentPlan: trackingForm.treatmentPlan,
+                  };
+
+                  // Add to records
+                  setPestRecords((prev) => [newRecord, ...prev]);
+
+                  // Reset form
+                  setTrackingForm({
+                    date: "",
+                    name: "",
+                    location: "",
+                    affectedPlants: "",
+                    treatmentPlan: "",
+                  });
+
+                  // Switch to history tab
+                  setActiveTab("history");
+                }}
+              >
                 <div>
                   <label className="block text-sm font-medium mb-1">Date</label>
-                  <Input type="text" placeholder="April 4th, 2025" />
+                  <Input
+                    type="text"
+                    placeholder="April 4th, 2025"
+                    value={trackingForm.date}
+                    onChange={(e) =>
+                      setTrackingForm({ ...trackingForm, date: e.target.value })
+                    }
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">
@@ -538,6 +591,11 @@ If the question IS related to agriculture, answer it in a helpful, accurate, and
                   <Input
                     type="text"
                     placeholder="e.g., Japanese Beetle, Powdery Mildew"
+                    value={trackingForm.name}
+                    onChange={(e) =>
+                      setTrackingForm({ ...trackingForm, name: e.target.value })
+                    }
+                    required
                   />
                 </div>
                 <div>
@@ -547,13 +605,32 @@ If the question IS related to agriculture, answer it in a helpful, accurate, and
                   <Input
                     type="text"
                     placeholder="e.g., Back garden, tomato bed"
+                    value={trackingForm.location}
+                    onChange={(e) =>
+                      setTrackingForm({
+                        ...trackingForm,
+                        location: e.target.value,
+                      })
+                    }
+                    required
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">
                     Affected Plants
                   </label>
-                  <Input type="text" placeholder="e.g., Tomatoes, peppers" />
+                  <Input
+                    type="text"
+                    placeholder="e.g., Tomatoes, peppers"
+                    value={trackingForm.affectedPlants}
+                    onChange={(e) =>
+                      setTrackingForm({
+                        ...trackingForm,
+                        affectedPlants: e.target.value,
+                      })
+                    }
+                    required
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1">
@@ -562,9 +639,19 @@ If the question IS related to agriculture, answer it in a helpful, accurate, and
                   <textarea
                     className="w-full min-h-[100px] rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                     placeholder="Describe your planned treatment method"
+                    value={trackingForm.treatmentPlan}
+                    onChange={(e) =>
+                      setTrackingForm({
+                        ...trackingForm,
+                        treatmentPlan: e.target.value,
+                      })
+                    }
+                    required
                   />
                 </div>
-                <Button className="w-full">Save Record</Button>
+                <Button type="submit" className="w-full">
+                  Save Record
+                </Button>
               </form>
             </CardContent>
           </Card>
@@ -668,6 +755,11 @@ If the question IS related to agriculture, answer it in a helpful, accurate, and
                               variant="outline"
                               size="sm"
                               className="mt-2"
+                              onClick={() => {
+                                navigate(`/pest-details/${record.id}`, {
+                                  state: { record },
+                                });
+                              }}
                             >
                               View Details
                             </Button>
@@ -717,11 +809,13 @@ If the question IS related to agriculture, answer it in a helpful, accurate, and
         <TabsContent value="expert" className="flex-1">
           <Card className="flex-1 flex flex-col">
             <CardContent className="flex-1 flex flex-col p-6">
-              <div className="flex-1 flex items-center justify-center">
-                <div className="w-full max-w-2xl">
-                  <p className="text-center text-muted-foreground mb-8">
-                    Ask about farming, gardening, or pest control...
-                  </p>
+              <div className="flex-1 overflow-y-auto">
+                <div className="w-full max-w-2xl mx-auto">
+                  {messages.length === 1 && (
+                    <p className="text-center text-muted-foreground mb-8">
+                      Ask about farming, gardening, or pest control...
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="flex flex-col gap-4 mt-auto">
