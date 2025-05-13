@@ -76,8 +76,15 @@ const OutputDetails: React.FC<OutputDetailsProps> = ({
     item.storageLocation || "",
   );
 
-  // Initialize harvest history if it doesn't exist
-  const harvestHistory = item.harvestHistory || [];
+  // Initialize harvest history from the item prop directly
+  const [harvestHistory, setHarvestHistory] = useState(
+    item.harvestHistory || [],
+  );
+
+  // Update local state when item prop changes
+  useEffect(() => {
+    setHarvestHistory(item.harvestHistory || []);
+  }, [item.harvestHistory]);
 
   const [harvestDate, setHarvestDate] = useState(
     new Date().toISOString().split("T")[0],
@@ -113,7 +120,12 @@ const OutputDetails: React.FC<OutputDetailsProps> = ({
       notes,
     };
 
-    const updatedHistory = [newHarvestRecord, ...harvestHistory];
+    // Make sure we're working with an array even if harvestHistory is undefined
+    const currentHistory = Array.isArray(item.harvestHistory)
+      ? [...item.harvestHistory]
+      : [];
+    const updatedHistory = [newHarvestRecord, ...currentHistory];
+
     const updatedItem = {
       ...item,
       quantity: newQuantity,
@@ -122,7 +134,7 @@ const OutputDetails: React.FC<OutputDetailsProps> = ({
       harvestHistory: updatedHistory,
       notes: itemNotes,
       storageLocation,
-      quality: harvestHistory.length === 0 ? quality : item.quality,
+      quality: currentHistory.length === 0 ? quality : item.quality,
     };
 
     // Use local state management instead of Supabase for now

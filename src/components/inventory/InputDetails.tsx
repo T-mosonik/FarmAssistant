@@ -72,8 +72,13 @@ const InputDetails: React.FC<InputDetailsProps> = ({
   );
   const [itemNotes, setItemNotes] = useState(item.notes || "");
 
-  // Initialize usage history if it doesn't exist
-  const usageHistory = item.usageHistory || [];
+  // Initialize usage history from the item prop directly
+  const [usageHistory, setUsageHistory] = useState(item.usageHistory || []);
+
+  // Update local state when item prop changes
+  useEffect(() => {
+    setUsageHistory(item.usageHistory || []);
+  }, [item.usageHistory]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -157,7 +162,12 @@ const InputDetails: React.FC<InputDetailsProps> = ({
       notes,
     };
 
-    const updatedHistory = [newUsageRecord, ...usageHistory];
+    // Make sure we're working with an array even if usageHistory is undefined
+    const currentHistory = Array.isArray(item.usageHistory)
+      ? [...item.usageHistory]
+      : [];
+    const updatedHistory = [newUsageRecord, ...currentHistory];
+
     const updatedItem = {
       ...item,
       quantity: newQuantity,
