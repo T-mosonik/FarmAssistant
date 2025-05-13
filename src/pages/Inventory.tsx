@@ -15,6 +15,16 @@ import {
   DialogFooter,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -48,6 +58,22 @@ const defaultInputs: InputItem[] = [
         fieldOrCrop: "North Corn Field",
         notes: "Applied before rainfall",
       },
+      {
+        id: "usage-2",
+        date: "2023-07-20",
+        quantity: 75,
+        purpose: "Fertilizing",
+        fieldOrCrop: "East Wheat Field",
+        notes: "Regular application",
+      },
+      {
+        id: "usage-3",
+        date: "2023-08-05",
+        quantity: 60,
+        purpose: "Fertilizing",
+        fieldOrCrop: "South Vegetable Garden",
+        notes: "Applied with irrigation",
+      },
     ],
   },
   {
@@ -61,6 +87,24 @@ const defaultInputs: InputItem[] = [
     supplier: "FarmChem Inc",
     purchaseDate: "2023-06-15",
     purchasePrice: 120.75,
+    usageHistory: [
+      {
+        id: "usage-4",
+        date: "2023-06-20",
+        quantity: 3,
+        purpose: "Pest Control",
+        fieldOrCrop: "Tomato Plants",
+        notes: "Treated for aphids",
+      },
+      {
+        id: "usage-5",
+        date: "2023-07-05",
+        quantity: 2,
+        purpose: "Pest Control",
+        fieldOrCrop: "Apple Orchard",
+        notes: "Preventative treatment",
+      },
+    ],
   },
   {
     id: "input-3",
@@ -73,6 +117,24 @@ const defaultInputs: InputItem[] = [
     supplier: "SeedTech",
     purchaseDate: "2023-07-01",
     purchasePrice: 85.0,
+    usageHistory: [
+      {
+        id: "usage-6",
+        date: "2023-07-03",
+        quantity: 100,
+        purpose: "Planting",
+        fieldOrCrop: "Greenhouse 1",
+        notes: "Spring planting",
+      },
+      {
+        id: "usage-7",
+        date: "2023-07-15",
+        quantity: 150,
+        purpose: "Planting",
+        fieldOrCrop: "Greenhouse 2",
+        notes: "Summer planting",
+      },
+    ],
   },
   {
     id: "input-4",
@@ -85,6 +147,136 @@ const defaultInputs: InputItem[] = [
     supplier: "FarmTools Co",
     purchaseDate: "2023-05-15",
     purchasePrice: 230.0,
+    usageHistory: [
+      {
+        id: "usage-8",
+        date: "2023-05-20",
+        quantity: 100,
+        purpose: "Installation",
+        fieldOrCrop: "North Field",
+        notes: "New irrigation system",
+      },
+      {
+        id: "usage-9",
+        date: "2023-06-10",
+        quantity: 50,
+        purpose: "Repair",
+        fieldOrCrop: "South Field",
+        notes: "Fixed leaking sections",
+      },
+    ],
+  },
+  {
+    id: "input-5",
+    name: "Organic Compost",
+    category: "Fertilizer",
+    quantity: 1200,
+    unit: "kg",
+    lastUpdated: "2023-08-01",
+    status: "In Stock",
+    supplier: "GreenEarth Organics",
+    purchaseDate: "2023-07-25",
+    purchasePrice: 32.5,
+    usageHistory: [
+      {
+        id: "usage-10",
+        date: "2023-08-02",
+        quantity: 300,
+        purpose: "Soil Amendment",
+        fieldOrCrop: "Vegetable Garden",
+        notes: "Mixed with topsoil",
+      },
+      {
+        id: "usage-11",
+        date: "2023-08-10",
+        quantity: 200,
+        purpose: "Soil Amendment",
+        fieldOrCrop: "Berry Patch",
+        notes: "Fall preparation",
+      },
+    ],
+  },
+  {
+    id: "input-6",
+    name: "Tractor Fuel",
+    category: "Fuel",
+    quantity: 350,
+    unit: "L",
+    lastUpdated: "2023-08-05",
+    status: "In Stock",
+    supplier: "Farm Fuels Inc",
+    purchaseDate: "2023-08-01",
+    purchasePrice: 1.25,
+    usageHistory: [
+      {
+        id: "usage-12",
+        date: "2023-08-03",
+        quantity: 50,
+        purpose: "Harvesting",
+        fieldOrCrop: "Wheat Field",
+        notes: "Combine harvester",
+      },
+      {
+        id: "usage-13",
+        date: "2023-08-07",
+        quantity: 30,
+        purpose: "Plowing",
+        fieldOrCrop: "North Field",
+        notes: "Fall preparation",
+      },
+    ],
+  },
+  {
+    id: "input-7",
+    name: "Wheat Seeds",
+    category: "Seeds",
+    quantity: 800,
+    unit: "kg",
+    lastUpdated: "2023-09-01",
+    status: "In Stock",
+    supplier: "GrainGrow Ltd",
+    purchaseDate: "2023-08-25",
+    purchasePrice: 3.75,
+    usageHistory: [
+      {
+        id: "usage-14",
+        date: "2023-09-05",
+        quantity: 250,
+        purpose: "Planting",
+        fieldOrCrop: "East Field",
+        notes: "Fall planting",
+      },
+      {
+        id: "usage-15",
+        date: "2023-09-10",
+        quantity: 300,
+        purpose: "Planting",
+        fieldOrCrop: "West Field",
+        notes: "Fall planting",
+      },
+    ],
+  },
+  {
+    id: "input-8",
+    name: "Calcium Supplement",
+    category: "Fertilizer",
+    quantity: 175,
+    unit: "kg",
+    lastUpdated: "2023-07-30",
+    status: "In Stock",
+    supplier: "AgriSupplies Ltd",
+    purchaseDate: "2023-07-20",
+    purchasePrice: 28.5,
+    usageHistory: [
+      {
+        id: "usage-16",
+        date: "2023-07-25",
+        quantity: 25,
+        purpose: "Soil Amendment",
+        fieldOrCrop: "Apple Orchard",
+        notes: "pH adjustment",
+      },
+    ],
   },
 ];
 
@@ -109,6 +301,22 @@ const defaultOutputs: OutputItem[] = [
         fieldOrLocation: "North Field",
         notes: "Good yield despite dry conditions",
       },
+      {
+        id: "harvest-2",
+        date: "2023-08-15",
+        quantity: 1800,
+        quality: "Excellent",
+        fieldOrLocation: "East Field",
+        notes: "Excellent yield after irrigation improvements",
+      },
+      {
+        id: "harvest-3",
+        date: "2023-09-05",
+        quantity: 1650,
+        quality: "Good",
+        fieldOrLocation: "West Field",
+        notes: "Standard yield",
+      },
     ],
   },
   {
@@ -121,6 +329,32 @@ const defaultOutputs: OutputItem[] = [
     status: "Ready for Sale",
     quality: "Excellent",
     storageLocation: "Cold Storage 1",
+    harvestHistory: [
+      {
+        id: "harvest-4",
+        date: "2023-07-12",
+        quantity: 350,
+        quality: "Excellent",
+        fieldOrLocation: "Greenhouse 1",
+        notes: "First harvest of the season",
+      },
+      {
+        id: "harvest-5",
+        date: "2023-07-25",
+        quantity: 425,
+        quality: "Good",
+        fieldOrLocation: "Greenhouse 2",
+        notes: "Peak season harvest",
+      },
+      {
+        id: "harvest-6",
+        date: "2023-08-10",
+        quantity: 300,
+        quality: "Average",
+        fieldOrLocation: "Greenhouse 1",
+        notes: "Late season harvest",
+      },
+    ],
   },
   {
     id: "output-3",
@@ -131,6 +365,161 @@ const defaultOutputs: OutputItem[] = [
     harvestDate: "2023-07-15",
     status: "Sold",
     quality: "Good",
+    harvestHistory: [
+      {
+        id: "harvest-7",
+        date: "2023-07-15",
+        quantity: 200,
+        quality: "Good",
+        fieldOrLocation: "Dairy Barn",
+        notes: "Morning collection",
+      },
+      {
+        id: "harvest-8",
+        date: "2023-07-16",
+        quantity: 195,
+        quality: "Good",
+        fieldOrLocation: "Dairy Barn",
+        notes: "Morning collection",
+      },
+      {
+        id: "harvest-9",
+        date: "2023-07-17",
+        quantity: 210,
+        quality: "Excellent",
+        fieldOrLocation: "Dairy Barn",
+        notes: "After feed change",
+      },
+    ],
+  },
+  {
+    id: "output-4",
+    name: "Apples",
+    category: "Fruits",
+    quantity: 750,
+    unit: "kg",
+    harvestDate: "2023-09-10",
+    status: "Stored",
+    quality: "Excellent",
+    storageLocation: "Cold Storage 2",
+    harvestHistory: [
+      {
+        id: "harvest-10",
+        date: "2023-09-10",
+        quantity: 750,
+        quality: "Excellent",
+        fieldOrLocation: "North Orchard",
+        notes: "Early varieties",
+      },
+      {
+        id: "harvest-11",
+        date: "2023-09-20",
+        quantity: 850,
+        quality: "Good",
+        fieldOrLocation: "South Orchard",
+        notes: "Mid-season varieties",
+      },
+    ],
+  },
+  {
+    id: "output-5",
+    name: "Wheat",
+    category: "Grain",
+    quantity: 3200,
+    unit: "kg",
+    harvestDate: "2023-08-20",
+    status: "Stored",
+    quality: "Good",
+    storageLocation: "Silo 1",
+    harvestHistory: [
+      {
+        id: "harvest-12",
+        date: "2023-08-20",
+        quantity: 3200,
+        quality: "Good",
+        fieldOrLocation: "East Field",
+        notes: "Main harvest",
+      },
+      {
+        id: "harvest-13",
+        date: "2023-08-25",
+        quantity: 2800,
+        quality: "Average",
+        fieldOrLocation: "South Field",
+        notes: "Affected by late rain",
+      },
+    ],
+  },
+  {
+    id: "output-6",
+    name: "Eggs",
+    category: "Poultry",
+    quantity: 120,
+    unit: "dozen",
+    harvestDate: "2023-09-01",
+    status: "Ready for Sale",
+    quality: "Excellent",
+    storageLocation: "Refrigerated Storage",
+    harvestHistory: [
+      {
+        id: "harvest-14",
+        date: "2023-09-01",
+        quantity: 120,
+        quality: "Excellent",
+        fieldOrLocation: "Chicken Coop 1",
+        notes: "Weekly collection",
+      },
+      {
+        id: "harvest-15",
+        date: "2023-09-08",
+        quantity: 115,
+        quality: "Good",
+        fieldOrLocation: "Chicken Coop 1",
+        notes: "Weekly collection",
+      },
+    ],
+  },
+  {
+    id: "output-7",
+    name: "Potatoes",
+    category: "Vegetables",
+    quantity: 1200,
+    unit: "kg",
+    harvestDate: "2023-08-30",
+    status: "Stored",
+    quality: "Good",
+    storageLocation: "Root Cellar",
+    harvestHistory: [
+      {
+        id: "harvest-16",
+        date: "2023-08-30",
+        quantity: 1200,
+        quality: "Good",
+        fieldOrLocation: "West Field",
+        notes: "Main harvest",
+      },
+    ],
+  },
+  {
+    id: "output-8",
+    name: "Honey",
+    category: "Other",
+    quantity: 75,
+    unit: "kg",
+    harvestDate: "2023-09-15",
+    status: "Ready for Sale",
+    quality: "Excellent",
+    storageLocation: "Processing Room",
+    harvestHistory: [
+      {
+        id: "harvest-17",
+        date: "2023-09-15",
+        quantity: 75,
+        quality: "Excellent",
+        fieldOrLocation: "Apiary",
+        notes: "Fall harvest",
+      },
+    ],
   },
 ];
 
@@ -144,6 +533,7 @@ const Inventory = () => {
   const [isOutputDetailsOpen, setIsOutputDetailsOpen] = useState(false);
   const [isAddInputOpen, setIsAddInputOpen] = useState(false);
   const [isAddOutputOpen, setIsAddOutputOpen] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
 
   // New input form state
   const [newInput, setNewInput] = useState<
@@ -630,17 +1020,6 @@ const Inventory = () => {
                 className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer relative"
                 onClick={() => handleInputSelect(input)}
               >
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-2 right-2 h-6 w-6"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleInputDelete(input.id);
-                  }}
-                >
-                  <Trash2 className="h-3 w-3 text-red-500" />
-                </Button>
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="font-medium">{input.name}</h3>
                   <div
@@ -665,6 +1044,20 @@ const Inventory = () => {
                   Last updated:{" "}
                   {new Date(input.lastUpdated).toLocaleDateString()}
                 </div>
+                <div className="flex justify-end mt-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedInput(input);
+                      setIsDeleteConfirmOpen(true);
+                    }}
+                  >
+                    <Trash2 className="h-3 w-3 text-red-500" />
+                  </Button>
+                </div>
               </div>
             ))}
           </div>
@@ -685,17 +1078,6 @@ const Inventory = () => {
                 className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer relative"
                 onClick={() => handleOutputSelect(output)}
               >
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute top-2 right-2 h-6 w-6"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleOutputDelete(output.id);
-                  }}
-                >
-                  <Trash2 className="h-3 w-3 text-red-500" />
-                </Button>
                 <div className="flex justify-between items-start mb-2">
                   <h3 className="font-medium">{output.name}</h3>
                   <div
@@ -723,6 +1105,20 @@ const Inventory = () => {
                 )}
                 <div className="text-xs text-muted-foreground mt-2">
                   Harvested: {new Date(output.harvestDate).toLocaleDateString()}
+                </div>
+                <div className="flex justify-end mt-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedOutput(output);
+                      setIsDeleteConfirmOpen(true);
+                    }}
+                  >
+                    <Trash2 className="h-3 w-3 text-red-500" />
+                  </Button>
                 </div>
               </div>
             ))}
@@ -760,6 +1156,42 @@ const Inventory = () => {
           onUpdate={handleOutputUpdate}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={isDeleteConfirmOpen}
+        onOpenChange={setIsDeleteConfirmOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete this
+              item from your inventory.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsDeleteConfirmOpen(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (selectedInput) {
+                  handleInputDelete(selectedInput.id);
+                  setSelectedInput(null);
+                } else if (selectedOutput) {
+                  handleOutputDelete(selectedOutput.id);
+                  setSelectedOutput(null);
+                }
+                setIsDeleteConfirmOpen(false);
+              }}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

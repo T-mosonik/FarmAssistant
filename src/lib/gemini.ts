@@ -4,7 +4,7 @@
 export interface GeminiIdentificationResult {
   name: string;
   confidence: number;
-  type: "plant" | "pest" | "disease";
+  type: "plant" | "pest" | "disease" | "error";
   description: string;
   recommendations?: string[];
   causes?: string[];
@@ -76,7 +76,7 @@ If a pest or disease is identified, provide a detailed analysis in the following
 4. Description: A brief description of the pest or disease in 1-2 sentences
 5. Causes: List 2-3 main causes or conditions that lead to this pest or disease
 6. Control Methods:
-   a. Chemical Control: For each chemical control option (limit to 2), provide:
+   a. Chemical Control: For each chemical control option (limit to at least 2), provide:
       - Name of the chemical/product
       - Active Ingredient (format as: "Active ingredient 25 g/L EC")
       - Application Rate (e.g., "1 ml/L water")
