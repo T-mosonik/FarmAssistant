@@ -475,32 +475,6 @@ const TaskPlanner = () => {
                           ))}
                         </SelectContent>
                       </Select>
-
-                      <div className="flex items-center gap-2">
-                        <Input
-                          placeholder="Add custom worker"
-                          className="flex-1"
-                          onKeyDown={(e) => {
-                            if (
-                              e.key === "Enter" &&
-                              e.currentTarget.value.trim()
-                            ) {
-                              const newWorker = e.currentTarget.value.trim();
-                              if (!selectedWorkers.includes(newWorker)) {
-                                setSelectedWorkers([
-                                  ...selectedWorkers,
-                                  newWorker,
-                                ]);
-                                setNewTask({
-                                  ...newTask,
-                                  assignedTo: [...selectedWorkers, newWorker],
-                                });
-                                e.currentTarget.value = "";
-                              }
-                            }
-                          }}
-                        />
-                      </div>
                     </div>
 
                     <div className="flex flex-wrap gap-2 mt-2">
@@ -689,30 +663,7 @@ const TaskPlanner = () => {
               <div className="grid grid-cols-4 items-start gap-4">
                 <Label className="text-right pt-2">Assign To</Label>
                 <div className="col-span-3">
-                  <div className="flex gap-2">
-                    <Select
-                      onValueChange={(value) => {
-                        if (!selectedWorkers.includes(value)) {
-                          setSelectedWorkers([...selectedWorkers, value]);
-                          setSelectedTask({
-                            ...selectedTask,
-                            assignedTo: [...selectedWorkers, value],
-                          });
-                        }
-                      }}
-                    >
-                      <SelectTrigger className="flex-1">
-                        <SelectValue placeholder="Select worker" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableWorkers.map((worker) => (
-                          <SelectItem key={worker} value={worker}>
-                            {worker}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  <div className="flex gap-2"></div>
 
                   <div className="flex flex-wrap gap-2 mt-2">
                     {selectedWorkers.map((worker) => (

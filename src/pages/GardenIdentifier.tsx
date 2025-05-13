@@ -8,16 +8,25 @@ import {
   Send,
   Loader2,
   Info,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/components/ui/use-toast";
 import {
   processImageWithGemini,
   GeminiIdentificationResult,
 } from "@/lib/gemini";
 import IdentificationReport from "@/components/ai-chat/IdentificationReport";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  PestRecord,
+  createPestRecord,
+  getPestRecords,
+  deletePestRecord,
+} from "@/lib/database";
 
 interface Message {
   id: string;
@@ -26,49 +35,27 @@ interface Message {
   timestamp: Date;
 }
 
-interface PestRecord {
-  id: string;
-  name: string;
-  date: string;
-  location: string;
-  affectedPlants: string;
-  treatmentPlan: string;
-}
-
 const GardenIdentifier = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("identify");
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] =
     useState<GeminiIdentificationResult | null>(null);
   const [userCountry, setUserCountry] = useState("Kenya");
-  const [pestRecords, setPestRecords] = useState<PestRecord[]>([
-    {
-      id: "1",
-      name: "Aphids",
-      date: "March 15th, 2024",
-      location: "Vegetable Garden",
-      affectedPlants: "Tomatoes, Peppers",
-      treatmentPlan: "Neem oil spray applied",
-    },
-    {
-      id: "2",
-      name: "Japanese Beetles",
-      date: "March 10th, 2024",
-      location: "Rose Garden",
-      affectedPlants: "Rose bushes",
-      treatmentPlan: "Hand picking and organic pesticide",
-    },
-  ]);
+  const [pestRecords, setPestRecords] = useState<PestRecord[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Form state for tracking new pests/diseases
   const [trackingForm, setTrackingForm] = useState({
     date: "",
     name: "",
     location: "",
-    affectedPlants: "",
-    treatmentPlan: "",
+    affected_plants: "",
+    treatment_plan: "",
+    notes: "",
   });
 
   // History tab filtering state
@@ -94,6 +81,62 @@ const GardenIdentifier = () => {
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  // Load dummy pest records
+  useEffect(() => {
+    const dummyPestRecords = [
+      {
+        id: "1",
+        name: "Aphids",
+        date: new Date("2024-05-10").toISOString(),
+        location: "Tomato Bed",
+        affected_plants: "Tomatoes, Peppers",
+        treatment_plan: "Neem oil spray applied weekly",
+        notes: "First spotted on the underside of leaves",
+      },
+      {
+        id: "2",
+        name: "Powdery Mildew",
+        date: new Date("2024-05-05").toISOString(),
+        location: "Squash Patch",
+        affected_plants: "Zucchini, Cucumber",
+        treatment_plan: "Baking soda spray and improved air circulation",
+        notes: "Appeared after period of high humidity",
+      },
+      {
+        id: "3",
+        name: "Japanese Beetles",
+        date: new Date("2024-04-28").toISOString(),
+        location: "Rose Garden",
+        affected_plants: "Roses, Grapes",
+        treatment_plan: "Hand picking and milky spore application",
+        notes: "Heavy infestation this year compared to last",
+      },
+      {
+        id: "4",
+        name: "Tomato Hornworm",
+        date: new Date("2024-04-15").toISOString(),
+        location: "Vegetable Garden",
+        affected_plants: "Tomatoes",
+        treatment_plan: "BT spray and manual removal",
+        notes: "Found parasitic wasp eggs on some specimens",
+      },
+      {
+        id: "5",
+        name: "Root Rot",
+        date: new Date("2024-04-02").toISOString(),
+        location: "Container Garden",
+        affected_plants: "Basil, Mint",
+        treatment_plan: "Improved drainage and reduced watering",
+        notes: "Likely caused by overwatering during rainy season",
+      },
+    ];
+
+    setTimeout(() => {
+      setPestRecords(dummyPestRecords);
+      setIsLoading(false);
+    }, 500); // Simulate loading delay
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
@@ -261,7 +304,6 @@ If the question IS related to agriculture, answer it in a helpful, accurate, and
             content: response,
             timestamp: new Date(),
           };
-
           setMessages((prev) => [...prev, responseMessage]);
         }
       }
@@ -329,23 +371,30 @@ If the question IS related to agriculture, answer it in a helpful, accurate, and
 
       // If it's a pest or disease, add it to records
       if (result.type !== "plant" || result.name !== "No Disease") {
-        const newRecord: PestRecord = {
-          id: Date.now().toString(),
-          name: result.name,
-          date: new Date().toLocaleDateString("en-US", {
-            month: "long",
-            day: "numeric",
-            year: "numeric",
-          }),
-          location: "Not specified",
-          affectedPlants:
-            result.plantsAffected && Array.isArray(result.plantsAffected)
-              ? result.plantsAffected.join(", ")
-              : "Unknown",
-          treatmentPlan: "See analysis for recommendations",
-        };
+        try {
+          const newRecord: PestRecord = {
+            id: Date.now().toString(),
+            name: result.name,
+            date: new Date().toISOString(),
+            location: "Not specified",
+            affected_plants:
+              result.plantsAffected && Array.isArray(result.plantsAffected)
+                ? result.plantsAffected.join(", ")
+                : "Unknown",
+            treatment_plan: "See analysis for recommendations",
+            notes: "Automatically added from image analysis",
+          };
 
-        setPestRecords((prev) => [newRecord, ...prev]);
+          // Add to local state instead of database
+          setPestRecords((prevRecords) => [newRecord, ...prevRecords]);
+        } catch (error) {
+          console.error("Error saving pest record from analysis:", error);
+          toast({
+            title: "Warning",
+            description: "Analysis completed but failed to save to records",
+            variant: "destructive",
+          });
+        }
       }
     } catch (error) {
       console.error("Error analyzing image:", error);
@@ -538,36 +587,52 @@ If the question IS related to agriculture, answer it in a helpful, accurate, and
             <CardContent className="p-6">
               <form
                 className="space-y-4"
-                onSubmit={(e) => {
+                onSubmit={async (e) => {
                   e.preventDefault();
 
-                  // Create new record
-                  const newRecord: PestRecord = {
-                    id: Date.now().toString(),
-                    name: trackingForm.name,
-                    date:
-                      trackingForm.date ||
-                      new Date().toLocaleDateString("en-US", {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                      }),
-                    location: trackingForm.location,
-                    affectedPlants: trackingForm.affectedPlants,
-                    treatmentPlan: trackingForm.treatmentPlan,
-                  };
+                  try {
+                    // Create new record
+                    const newRecord: PestRecord = {
+                      id: Date.now().toString(),
+                      name: trackingForm.name,
+                      date: trackingForm.date
+                        ? new Date(trackingForm.date).toISOString()
+                        : new Date().toISOString(),
+                      location: trackingForm.location,
+                      affected_plants: trackingForm.affected_plants,
+                      treatment_plan: trackingForm.treatment_plan,
+                      notes: trackingForm.notes || "",
+                    };
 
-                  // Add to records
-                  setPestRecords((prev) => [newRecord, ...prev]);
+                    // Add to local state instead of database
+                    setPestRecords((prevRecords) => [
+                      newRecord,
+                      ...prevRecords,
+                    ]);
 
-                  // Reset form
-                  setTrackingForm({
-                    date: "",
-                    name: "",
-                    location: "",
-                    affectedPlants: "",
-                    treatmentPlan: "",
-                  });
+                    toast({
+                      title: "Success",
+                      description: "Pest record saved successfully",
+                    });
+
+                    // Reset form
+                    setTrackingForm({
+                      date: "",
+                      name: "",
+                      location: "",
+                      affected_plants: "",
+                      treatment_plan: "",
+                      notes: "",
+                    });
+                  } catch (error) {
+                    console.error("Error saving pest record:", error);
+                    toast({
+                      title: "Error",
+                      description:
+                        "Failed to save pest record. Please try again.",
+                      variant: "destructive",
+                    });
+                  }
 
                   // Switch to history tab
                   setActiveTab("history");
@@ -576,8 +641,8 @@ If the question IS related to agriculture, answer it in a helpful, accurate, and
                 <div>
                   <label className="block text-sm font-medium mb-1">Date</label>
                   <Input
-                    type="text"
-                    placeholder="April 4th, 2025"
+                    type="date"
+                    placeholder="YYYY-MM-DD"
                     value={trackingForm.date}
                     onChange={(e) =>
                       setTrackingForm({ ...trackingForm, date: e.target.value })
@@ -622,11 +687,11 @@ If the question IS related to agriculture, answer it in a helpful, accurate, and
                   <Input
                     type="text"
                     placeholder="e.g., Tomatoes, peppers"
-                    value={trackingForm.affectedPlants}
+                    value={trackingForm.affected_plants}
                     onChange={(e) =>
                       setTrackingForm({
                         ...trackingForm,
-                        affectedPlants: e.target.value,
+                        affected_plants: e.target.value,
                       })
                     }
                     required
@@ -639,11 +704,11 @@ If the question IS related to agriculture, answer it in a helpful, accurate, and
                   <textarea
                     className="w-full min-h-[100px] rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
                     placeholder="Describe your planned treatment method"
-                    value={trackingForm.treatmentPlan}
+                    value={trackingForm.treatment_plan}
                     onChange={(e) =>
                       setTrackingForm({
                         ...trackingForm,
-                        treatmentPlan: e.target.value,
+                        treatment_plan: e.target.value,
                       })
                     }
                     required
@@ -701,107 +766,119 @@ If the question IS related to agriculture, answer it in a helpful, accurate, and
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {pestRecords
-                  .filter((record) => {
-                    // Filter by search query (name or affected plants)
+              {isLoading ? (
+                <div className="flex justify-center items-center py-12">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
+                  <p>Loading records...</p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {pestRecords
+                    .filter((record) => {
+                      // Filter by search query (name or affected plants)
+                      const matchesSearch =
+                        searchQuery === "" ||
+                        record.name
+                          .toLowerCase()
+                          .includes(searchQuery.toLowerCase()) ||
+                        record.affected_plants
+                          .toLowerCase()
+                          .includes(searchQuery.toLowerCase());
+
+                      // Filter by date
+                      const matchesDate =
+                        dateFilter === "" ||
+                        (record.date &&
+                          new Date(record.date).toISOString().split("T")[0] ===
+                            dateFilter);
+
+                      // Filter by location
+                      const matchesLocation =
+                        locationFilter === "All Locations" ||
+                        record.location === locationFilter;
+
+                      return matchesSearch && matchesDate && matchesLocation;
+                    })
+                    .map((record) => (
+                      <Card key={record.id} className="overflow-hidden">
+                        <div className="p-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="font-medium text-lg">
+                              {record.name}
+                            </h3>
+                            <span className="text-xs text-muted-foreground">
+                              {record.date}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <p>
+                                <strong>Location:</strong> {record.location}
+                              </p>
+                              <p>
+                                <strong>Affected Plants:</strong>{" "}
+                                {record.affected_plants}
+                              </p>
+                            </div>
+                            <div className="flex flex-col items-end justify-between">
+                              <p>
+                                <strong>Treatment Plan:</strong>{" "}
+                                {record.treatment_plan}
+                              </p>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="mt-2"
+                                onClick={() => {
+                                  navigate(`/pest-details/${record.id}`, {
+                                    state: { pestRecord: record },
+                                  });
+                                }}
+                              >
+                                View Details
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  {pestRecords.filter((record) => {
                     const matchesSearch =
                       searchQuery === "" ||
                       record.name
                         .toLowerCase()
                         .includes(searchQuery.toLowerCase()) ||
-                      record.affectedPlants
+                      record.affected_plants
                         .toLowerCase()
                         .includes(searchQuery.toLowerCase());
-
-                    // Filter by date
                     const matchesDate =
                       dateFilter === "" ||
-                      new Date(record.date).toISOString().split("T")[0] ===
-                        dateFilter;
-
-                    // Filter by location
+                      (record.date &&
+                        new Date(record.date).toISOString().split("T")[0] ===
+                          dateFilter);
                     const matchesLocation =
                       locationFilter === "All Locations" ||
                       record.location === locationFilter;
-
                     return matchesSearch && matchesDate && matchesLocation;
-                  })
-                  .map((record) => (
-                    <Card key={record.id} className="overflow-hidden">
-                      <div className="p-4">
-                        <div className="flex justify-between items-start mb-2">
-                          <h3 className="font-medium text-lg">{record.name}</h3>
-                          <span className="text-xs text-muted-foreground">
-                            {record.date}
-                          </span>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div>
-                            <p>
-                              <strong>Location:</strong> {record.location}
-                            </p>
-                            <p>
-                              <strong>Affected Plants:</strong>{" "}
-                              {record.affectedPlants}
-                            </p>
-                          </div>
-                          <div className="flex flex-col items-end justify-between">
-                            <p>
-                              <strong>Treatment Plan:</strong>{" "}
-                              {record.treatmentPlan}
-                            </p>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="mt-2"
-                              onClick={() => {
-                                navigate(`/pest-details/${record.id}`, {
-                                  state: { record },
-                                });
-                              }}
-                            >
-                              View Details
-                            </Button>
-                          </div>
-                        </div>
+                  }).length === 0 &&
+                    !isLoading && (
+                      <div className="text-center py-8 text-muted-foreground">
+                        <p>No records match your filters</p>
+                        <Button
+                          variant="link"
+                          onClick={() => {
+                            setSearchQuery("");
+                            setDateFilter("");
+                            setLocationFilter("All Locations");
+                          }}
+                          className="mt-2"
+                        >
+                          Clear filters
+                        </Button>
                       </div>
-                    </Card>
-                  ))}
-                {pestRecords.filter((record) => {
-                  const matchesSearch =
-                    searchQuery === "" ||
-                    record.name
-                      .toLowerCase()
-                      .includes(searchQuery.toLowerCase()) ||
-                    record.affectedPlants
-                      .toLowerCase()
-                      .includes(searchQuery.toLowerCase());
-                  const matchesDate =
-                    dateFilter === "" ||
-                    new Date(record.date).toISOString().split("T")[0] ===
-                      dateFilter;
-                  const matchesLocation =
-                    locationFilter === "All Locations" ||
-                    record.location === locationFilter;
-                  return matchesSearch && matchesDate && matchesLocation;
-                }).length === 0 && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <p>No records match your filters</p>
-                    <Button
-                      variant="link"
-                      onClick={() => {
-                        setSearchQuery("");
-                        setDateFilter("");
-                        setLocationFilter("All Locations");
-                      }}
-                      className="mt-2"
-                    >
-                      Clear filters
-                    </Button>
-                  </div>
-                )}
-              </div>
+                    )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
